@@ -4,19 +4,10 @@ Og is a small collection of logger helper functions in elixir.
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed as:
-
-  1. Add og to your list of dependencies in `mix.exs`:
-
-        def deps do
-          [{:og, "~> 0.0.1"}]
-        end
-
-  2. Ensure og is started before your application:
-
-        def application do
-          [applications: [:og]]
-        end
+Add og to your list of dependencies in `mix.exs`:
+    
+    def deps do
+      [{:og, "~> 0.0.1"}]
 
 
 ## Project Features 
