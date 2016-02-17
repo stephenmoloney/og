@@ -1,10 +1,10 @@
-# Og
-Og is a small collection of logger helper functions in elixir.
+# Óg
+Óg is a small collection of logger helper functions in elixir.
 
 
 ## Installation
 
-Add og to your list of dependencies in `mix.exs`:
+Add óg to your list of dependencies in `mix.exs`:
     
     def deps do
       [{:og, "~> 0.0.1"}]

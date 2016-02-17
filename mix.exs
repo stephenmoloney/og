@@ -4,7 +4,7 @@ defmodule Og.Mixfile do
   def project do
     [
      app: :og,
-     name: "Og",
+     name: "Óg",
      version: "0.0.2",
      elixir: "~> 1.1",
      build_embedded: Mix.env == :prod,
