@@ -1,5 +1,5 @@
 # Og
-Og is a small collection of util logging functions in elixir.
+Og is a small collection of logger helper functions in elixir.
 
 
 ## Installation
