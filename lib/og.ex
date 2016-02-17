@@ -13,10 +13,15 @@ defmodule Og do
   @doc ~S"""
   Logs data after passing `data` first to the `Kernel.inspect/2`.
 
-  `data` : data to be logged.
-  `log_level` : `:info`, `:debug`, `:warn` or `:error`
-  `inspect_opts` : Keyword list of inspect options.
-                       see [here](http://elixir-lang.org/docs/stable/elixir/Kernel.html#inspect/2)
+  data : data to be logged
+
+  log_level: `:info` or `:debug` or `:warn` or `:error`
+
+  inspect_opts: Keyword list of inspect options. see [here](http://elixir-lang.org/docs/stable/elixir/Kernel.html#inspect/2)
+
+  ## Example
+
+      Og.log(String.to_atom("test"))
   """
   @spec log(data :: any, log_level :: atom, inspect_opts :: list) :: :ok
   def log(data, log_level \\ :debug, inspect_opts \\ []) do
@@ -60,9 +65,13 @@ defmodule Og do
 
   ## Example
 
-      def env_test() do
-        Og.context(__ENV__)
+      defmodule Test do
+        def env_test() do
+          Og.context(__ENV__)
+        end
       end
+
+      Test.env_test()
   """
   def context(env, log_level \\ :debug, inspect_opts \\ []) do
     base_details(env) |> log()
@@ -79,19 +88,27 @@ defmodule Og do
 
   ## Example
 
-      use Plug.Test
-      def test() do
-        conn = Plug.Test.conn(:get, "/test", :nil)
-        Og.conn_context(conn, __ENV__)
+      defmodule Test do
+        use Plug.Test
+        def test() do
+          conn = Plug.Test.conn(:get, "/test", :nil)
+          Og.conn_context(conn, __ENV__)
+        end
       end
+
+      Test.test()
 
   ## Example
 
-      use Plug.Test
-      def test() do
-        conn = Plug.Test.conn(:get, "/test", :nil)
-        Og.conn_context(conn, __ENV__, :warn, [:method, :req_headers, :peer])
+      defmodule Test do
+        use Plug.Test
+        def test() do
+          conn = Plug.Test.conn(:get, "/test", :nil)
+          Og.conn_context(conn, __ENV__, :warn, [:method, :req_headers, :peer])
+        end
       end
+
+      Test.test()
   """
   def conn_context(conn, env, log_level \\ :debug, conn_fields \\ [:method, :request_path], inspect_opts \\ []) do
     extra_args =
