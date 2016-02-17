@@ -23,7 +23,7 @@ defmodule Og do
 
       Og.log(String.to_atom("test"))
   """
-  @spec log(data :: any, log_level :: atom, inspect_opts :: list) :: :ok
+  @spec log(data :: any, log_level :: atom, inspect_opts :: list) :: atom
   def log(data, log_level \\ :debug, inspect_opts \\ []) do
     unless is_binary(data), do: data = Kernel.inspect(data)
     Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: data], requires: [Logger])
@@ -50,6 +50,7 @@ defmodule Og do
        |> Og.log_return()
        |> String.upcase()
   """
+  @spec log_return(data :: any, log_level :: atom, inspect_opts :: list) :: any
   def log_return(data, log_level \\ :debug, inspect_opts \\ []) do
     log(data, log_level, inspect_opts)
     data
@@ -73,6 +74,7 @@ defmodule Og do
 
       Test.env_test()
   """
+  @spec context(env :: Macro.Env.t, log_level :: atom, inspect_opts :: list) :: atom
   def context(env, log_level \\ :debug, inspect_opts \\ []) do
     base_details(env) |> log()
   end
@@ -110,6 +112,7 @@ defmodule Og do
 
       Test.test()
   """
+  @spec conn_context(conn :: Plug.Conn.t, env :: Macro.Env.t, log_level :: atom, conn_fields :: list, inspect_opts :: list) :: atom
   def conn_context(conn, env, log_level \\ :debug, conn_fields \\ [:method, :request_path], inspect_opts \\ []) do
     extra_args =
     Enum.reduce(conn_fields, "", fn(field, acc) ->
