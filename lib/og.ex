@@ -5,7 +5,7 @@ defmodule Og do
  ## Note:
     The following is the order of precedence for logging:
 
-    `:error > :warn > :info > "debug`
+    `:error > :warn > :info > :debug`
  """
  require Logger
 
@@ -76,7 +76,7 @@ defmodule Og do
   """
   @spec context(env :: Macro.Env.t, log_level :: atom, inspect_opts :: list) :: atom
   def context(env, log_level \\ :debug, inspect_opts \\ []) do
-    base_details(env) |> log()
+    base_details(env) |> log(log_level, inspect_opts)
   end
 
 

@@ -7,7 +7,7 @@
 Add óg to your list of dependencies in `mix.exs`:
     
     def deps do
-      [{:og, "~> 0.0.1"}]
+      [{:og, "~> 0.0.4}]
 
 
 ## Project Features 
