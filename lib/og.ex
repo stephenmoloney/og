@@ -121,7 +121,7 @@ defmodule Og do
       else
         acc <> Atom.to_string(field) <> ": " <> Kernel.inspect(Map.get(conn, field)) <> ", "
       end
-    end) |> String.rstrip(?\s) |> String.strip(?,)
+    end) |> String.rstrip(?\s) |> String.rstrip(?,)
     args = base_details(env) <> ", conn details: { " <> extra_args <> " }"
     log(args, log_level, inspect_opts)
   end
