@@ -13,7 +13,7 @@ Add óg to your list of dependencies in `mix.exs`:
 - [log/3](http://hexdocs.pm/og/Og.html#log/3) inspects the data passed and then calls functions in the [Logger module](https://github.com/elixir-lang/elixir/blob/master/lib/logger/lib/logger.ex) 
 - [log_return/3](http://hexdocs.pm/og/Og.html#log_return/3) inspects and logs the data, then returns the original data in a pipeline of functions.
 - [context/3](http://hexdocs.pm/og/Og.html#context/3) to get the current module, function and line from the caller.
-- [context_conn/5](http://hexdocs.pm/og/Og.html#conn_context/5) to get the current module, function and line where it is called along with some conn struct details. 
+- [conn_context/5](http://hexdocs.pm/og/Og.html#conn_context/5) to get the current module, function and line where it is called along with some conn struct details. 
 - All functions should obey the :compile_time_purge_level argument set in the config.exs file for Logger in the application.
 
 
@@ -48,7 +48,7 @@ Add óg to your list of dependencies in `mix.exs`:
     Test.env_test()
 
 
-### Og.context_conn/3
+### Og.conn_context/3
 
     defmodule Test do
       use Plug.Test
