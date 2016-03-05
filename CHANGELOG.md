@@ -1,6 +1,9 @@
-# Changelog for 0.0.5
+# Changelog for 0.0.6
 
-- Docs: Add examples to readme.md file
-- Docs: Add links to functions in hex docs.
-- Bug Fix: add arguments log_level, inspect_opts to the log function on line 79.
+#### Added Features:
+
+- Add an option `__ENV__` argument to the `log` and `log_return` function so that 
+  the context (line, function, module) can optionally be logged when the function is called.
+  
+- Add defaults for `log/1`, `log/2`, `log_return/1` and `log_return/2`
 

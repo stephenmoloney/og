@@ -10,26 +10,88 @@ defmodule Og do
  require Logger
 
 
+  def log(data), do: log(data, :debug, [])
+  def log(data, arg) when is_atom(arg), do: log(data, arg, [])
+  def log(data, arg), do: log(data, arg, :debug, [])
+
   @doc ~S"""
   Logs data after passing `data` first to the `Kernel.inspect/2`.
 
-  data : data to be logged
+      ## Arguments
 
-  log_level: `:info` or `:debug` or `:warn` or `:error`
+          data : data to be logged
+          log_level: `:info` or `:debug` or `:warn` or `:error`
+          inspect_opts: Keyword list of inspect options. see [here](http://elixir-lang.org/docs/stable/elixir/Kernel.html#inspect/2)
 
-  inspect_opts: Keyword list of inspect options. see [here](http://elixir-lang.org/docs/stable/elixir/Kernel.html#inspect/2)
+      ## Example
 
-  ## Example
-
-      Og.log(String.to_atom("test"))
+          Og.log(String.to_atom("test"))
   """
   @spec log(data :: any, log_level :: atom, inspect_opts :: list) :: atom
-  def log(data, log_level \\ :debug, inspect_opts \\ []) do
+  def log(data, log_level, inspect_opts) do
     unless is_binary(data), do: data = Kernel.inspect(data)
     Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: data], requires: [Logger])
     :ok
   end
 
+
+  @doc ~S"""
+  Logs data after passing `data` first to the `Kernel.inspect/2` along with context.
+
+      ## Arguments
+
+          data: data to be logged
+          context: environment details of the log.
+          log_level: `:info` or `:debug` or `:warn` or `:error`
+          inspect_opts: Keyword list of inspect options. see [here](http://elixir-lang.org/docs/stable/elixir/Kernel.html#inspect/2)
+
+  ## Example
+
+      Og.log(String.to_atom("test"), __ENV__)
+  """
+  @spec log(data :: any, env :: Macro.Env.t, log_level :: atom, inspect_opts :: list) :: atom
+  def log(data, env, log_level, inspect_opts) do
+    context(env, log_level, inspect_opts)
+    log(data, log_level, inspect_opts)
+  end
+
+
+
+  def log_return(data), do: log_return(data, :debug, [])
+  def log_return(data, arg) when is_atom(arg), do: log_return(data, arg, [])
+  def log_return(data, arg), do: log_return(data, arg, :debug, [])
+
+
+  @doc """
+  Logs `data` term by using the Kernel.inspect/2 and returns the original data type. Useful in a pipeline of functions.
+
+        ## Arguments
+
+          data : data to be logged
+          log_level: `:info` or `:debug` or `:warn` or `:error`
+          inspect_opts: Keyword list of inspect options. see [here](http://elixir-lang.org/docs/stable/elixir/Kernel.html#inspect/2)
+
+
+        ## Example
+             Og.log_return(String.to_atom("test"))
+
+        ## Example
+
+             %{first: "john", last: "doe"}
+             |> Map.to_list()
+             |> Enum.filter( &(&1 === {:first, "john"}))
+             |> Og.log_return()
+             |> List.last()
+             |> Tuple.to_list()
+             |> List.last()
+             |> Og.log_return()
+             |> String.upcase()
+  """
+  @spec log_return(data :: any, log_level :: atom, inspect_opts :: list) :: any
+  def log_return(data, log_level, inspect_opts) do
+    log(data, log_level, inspect_opts)
+    data
+  end
 
 
   @doc """
@@ -51,7 +113,8 @@ defmodule Og do
        |> String.upcase()
   """
   @spec log_return(data :: any, log_level :: atom, inspect_opts :: list) :: any
-  def log_return(data, log_level \\ :debug, inspect_opts \\ []) do
+  def log_return(data, env, log_level, inspect_opts) do
+    context(env, log_level, inspect_opts)
     log(data, log_level, inspect_opts)
     data
   end
