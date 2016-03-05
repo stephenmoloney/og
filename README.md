@@ -24,6 +24,11 @@ Add óg to your list of dependencies in `mix.exs`:
     Og.log(String.to_atom("test"))
 
 
+### Og.log/3 where the line, function module also needs to be logged.
+
+    Og.log(String.to_atom("test"), __ENV__, :warn)
+
+
 ### Og.log_return/3
 
     %{first: "john", last: "doe"}

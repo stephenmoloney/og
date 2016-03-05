@@ -11,8 +11,9 @@ defmodule Og do
 
 
   def log(data), do: log(data, :debug, [])
-  def log(data, arg) when is_atom(arg), do: log(data, arg, [])
-  def log(data, arg), do: log(data, arg, :debug, [])
+  def log(data, log_level) when is_atom(log_level), do: log(data, log_level, [])
+  def log(data, env), do: log(data, env, :debug, [])
+  def log(data, env, log_level) when is_map(env), do: log(data, env, log_level, [])
 
   @doc ~S"""
   Logs data after passing `data` first to the `Kernel.inspect/2`.
@@ -28,7 +29,7 @@ defmodule Og do
           Og.log(String.to_atom("test"))
   """
   @spec log(data :: any, log_level :: atom, inspect_opts :: list) :: atom
-  def log(data, log_level, inspect_opts) do
+  def log(data, log_level, inspect_opts) when is_atom(log_level) do
     unless is_binary(data), do: data = Kernel.inspect(data)
     Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: data], requires: [Logger])
     :ok
@@ -48,18 +49,20 @@ defmodule Og do
   ## Example
 
       Og.log(String.to_atom("test"), __ENV__)
+      Og.log(String.to_atom("test"), __ENV__, :warn)
   """
   @spec log(data :: any, env :: Macro.Env.t, log_level :: atom, inspect_opts :: list) :: atom
   def log(data, env, log_level, inspect_opts) do
-    context(env, log_level, inspect_opts)
-    log(data, log_level, inspect_opts)
+    String.strip(base_details(env)) <> ", " <> Kernel.inspect(data)
+    |> log(log_level, inspect_opts)
   end
 
 
 
   def log_return(data), do: log_return(data, :debug, [])
-  def log_return(data, arg) when is_atom(arg), do: log_return(data, arg, [])
-  def log_return(data, arg), do: log_return(data, arg, :debug, [])
+  def log_return(data, log_level) when is_atom(log_level), do: log_return(data, log_level, [])
+  def log_return(data, env), do: log_return(data, env, :debug, [])
+  def log_return(data, env, log_level) when is_map(env), do: log_return(data, env, log_level, [])
 
 
   @doc """
@@ -74,6 +77,7 @@ defmodule Og do
 
         ## Example
              Og.log_return(String.to_atom("test"))
+             Og.log_return(String.to_atom("test"), __ENV__, :warn)
 
         ## Example
 
@@ -99,6 +103,8 @@ defmodule Og do
 
   ## Example
        Og.log_return(String.to_atom("test"))
+       Og.log_return(String.to_atomncryptedubu2("test"), __ENV__)
+       Og.log_return(String.to_atom("test"), __ENV__, :warn)
 
   ## Example
 
@@ -109,13 +115,13 @@ defmodule Og do
        |> List.last()
        |> Tuple.to_list()
        |> List.last()
-       |> Og.log_return()
+       |> Og.log_return(__ENV__, :warn)
        |> String.upcase()
   """
   @spec log_return(data :: any, log_level :: atom, inspect_opts :: list) :: any
   def log_return(data, env, log_level, inspect_opts) do
-    context(env, log_level, inspect_opts)
-    log(data, log_level, inspect_opts)
+    String.strip(base_details(env)) <> ", " <> Kernel.inspect(data)
+    |> log(log_level, inspect_opts)
     data
   end
 
