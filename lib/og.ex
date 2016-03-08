@@ -30,7 +30,7 @@ defmodule Og do
   """
   @spec log(data :: any, log_level :: atom, inspect_opts :: list) :: atom
   def log(data, log_level, inspect_opts) when is_atom(log_level) do
-    unless is_binary(data), do: data = Kernel.inspect(data)
+    unless is_binary(data), do: data = Kernel.inspect(data, inspect_opts)
     Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: data], requires: [Logger])
     :ok
   end
@@ -53,7 +53,7 @@ defmodule Og do
   """
   @spec log(data :: any, env :: Macro.Env.t, log_level :: atom, inspect_opts :: list) :: atom
   def log(data, env, log_level, inspect_opts) do
-    String.strip(base_details(env)) <> ", " <> Kernel.inspect(data)
+    String.strip(base_details(env)) <> ", " <> Kernel.inspect(data, inspect_opts)
     |> log(log_level, inspect_opts)
   end
 
@@ -120,7 +120,7 @@ defmodule Og do
   """
   @spec log_return(data :: any, log_level :: atom, inspect_opts :: list) :: any
   def log_return(data, env, log_level, inspect_opts) do
-    String.strip(base_details(env)) <> ", " <> Kernel.inspect(data)
+    String.strip(base_details(env)) <> ", " <> Kernel.inspect(data, inspect_opts)
     |> log(log_level, inspect_opts)
     data
   end
@@ -188,7 +188,7 @@ defmodule Og do
       if is_binary(Map.get(conn, field)) do
         acc <> Atom.to_string(field) <> ": " <> Map.get(conn, field) <> ", "
       else
-        acc <> Atom.to_string(field) <> ": " <> Kernel.inspect(Map.get(conn, field)) <> ", "
+        acc <> Atom.to_string(field) <> ": " <> Kernel.inspect(Map.get(conn, field), inspect_opts) <> ", "
       end
     end) |> String.rstrip(?\s) |> String.rstrip(?,)
     args = base_details(env) <> ", conn details: { " <> extra_args <> " }"
