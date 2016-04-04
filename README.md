@@ -1,13 +1,13 @@
 # Óg [![Build Status](https://travis-ci.org/stephenmoloney/og.svg)](https://travis-ci.org/stephenmoloney/og) [![Hex Version](http://img.shields.io/hexpm/v/og.svg?style=flat)](https://hex.pm/packages/og) [![Hex docs](http://img.shields.io/badge/hex.pm-docs-green.svg?style=flat)](https://hexdocs.pm/og)
 
-[Óg](http://hexdocs.pm/og/Og.html) is a small collection of logger helper functions in elixir.
+[Óg](http://hexdocs.pm/og/Og.html) is a small collection of logger helper functions.
 
 
 ## Installation
 
 Add óg to your list of dependencies in `mix.exs`:
 
-    def deps, do: [{:og, "~> 0.0.5"}]
+    def deps, do: [{:og, "~> 0.1.0"}]
 
 
 ## Summary
