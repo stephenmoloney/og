@@ -173,7 +173,7 @@ function and line environment information.
   ## Example
 
        Og.log_return(String.to_atom("test"))
-       Og.log_return(String.to_atomncryptedubu2("test"), __ENV__)
+       Og.log_return(String.to_atom("test"), __ENV__)
        Og.log_return(String.to_atom("test"), __ENV__, :warn)
 
   ## Example
