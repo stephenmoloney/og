@@ -1,4 +1,4 @@
-Copyright (c) 2016 Stephen Moloney
+Copyright (c) 2016 - 2017 Stephen Moloney
 
 MIT License
 

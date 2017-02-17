@@ -81,7 +81,7 @@ function and line environment information.
   """
   @spec log(any, atom, Keyword.t) :: :ok
   def log(data, log_level, inspect_opts) when is_atom(log_level) do
-    unless is_binary(data), do: data = Kernel.inspect(data, inspect_opts)
+    data = unless is_binary(data), do: Kernel.inspect(data, inspect_opts), else: data
     Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: data], requires: [Logger])
     :ok
   end

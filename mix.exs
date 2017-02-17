@@ -1,12 +1,13 @@
 defmodule Og.Mixfile do
   use Mix.Project
+  @version "0.1.1"
 
   def project do
     [
      app: :og,
      name: "Óg",
-     version: "0.1.0",
-     elixir: "~> 1.1",
+     version: @version,
+     elixir: "~> 1.1 or ~> 1.2 or ~> 1.3 or ~> 1.4",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      elixirc_paths: elixirc_paths(Mix.env),
@@ -28,8 +29,8 @@ defmodule Og.Mixfile do
   def deps() do
     [
       {:plug,  "~> 1.0", only: [:dev, :test]},
-      {:earmark, "~> 0.2.1", only: :dev},
-      {:ex_doc,  "~> 0.11", only: :dev}
+      {:earmark, "~> 1.0", only: :dev},
+      {:ex_doc,  "~> 0.14", only: :dev}
     ]
   end
 

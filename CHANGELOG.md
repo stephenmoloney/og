@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.1.1
+
+[changes]
+- fix compiler warnings on newer elixir verson.
+- Add pull request for `travis.yml`
 
 ## v0.1.0
 
