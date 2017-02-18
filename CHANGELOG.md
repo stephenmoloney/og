@@ -1,10 +1,20 @@
 # Changelog
 
-## v0.1.1
+## v0.2
 
 [changes]
 - fix compiler warnings on newer elixir verson.
 - Add pull request for `travis.yml`
+- remove docs about `conn` and `conn_context` as considering moving these functions to a new module. They
+add a lot of bulk to the docs. For now maintain as public functions without `@doc`.
+
+
+[breaking changes]
+- simplify the api, breaks one of the `log/3` ad `log_return/3` functions.
+
+[enhancements]
+- Able to add `inspect_opts` to the config file so that they will be applied by default on
+all logs. Example `config :og, inspect_opts: [syntax_colors: [atom: :blue]]`
 
 ## v0.1.0
 

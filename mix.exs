@@ -1,6 +1,6 @@
 defmodule Og.Mixfile do
   use Mix.Project
-  @version "0.1.1"
+  @version "0.2.0"
 
   def project do
     [
@@ -12,7 +12,7 @@ defmodule Og.Mixfile do
      start_permanent: Mix.env == :prod,
      elixirc_paths: elixirc_paths(Mix.env),
      source_url: "https://github.com/stephenmoloney/og",
-     description: "Og is a small collection of logger helper functions in elixir",
+     description: "Og is a small collection of logger and debugging helper functions in elixir.",
      package: package(),
      deps: deps(),
      docs: [
