@@ -13,7 +13,7 @@ Add óg to your list of dependencies in `mix.exs`:
 ## Summary
 
 
-- `log/1`, `log/2`, `log/3`, `log/4`
+- `log/1`, `log/2`
 
 - Inspects the data before logging it. For example, this can be helpful for avoiding the `Protocol.UndefinedError`
 when logging tuples for example.
@@ -31,21 +31,15 @@ data transformations using the `|>` operator.
 ## Example Usages
 
 
-#### Og.log/1
+#### `Og.log/1`
 
     Og.log(String.to_atom("test"))
 
-#### Og.log/3
+#### `Og.log/2`
 
-    Og.log(String.to_atom("test"), __ENV__, :warn)
+    Og.log(String.to_atom("test"), :warn)
 
-
-#### Og.log/4
-
-    Og.log(:test, __ENV__, :info, inspect_opts: [syntax_colors: [atom: :blue]])
-    Og.log(String.to_atom("test"), :info, [pretty: :true, syntax_colors: [atom: :green]])
-
-#### Og.log_r/3
+#### `Og.log_r/1` , `Og.log_r/2`
 
     %{first: "john", last: "doe"}
     |> Map.to_list()
