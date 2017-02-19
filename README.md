@@ -21,11 +21,11 @@ when logging tuples for example.
 logger `:compile_time_purge_level` configuration setting - defaults to `:debug` when not passed.
 
 
-`log_return/1`, `log_return/2`, `log_return/3`, `log_return/4`
+`log_r/1`, `log_r/2``
 
 - Performs operations identical to `Og.log/4` but returns the data in it's original form.
 - Can be useful when one wants to log some intermediate data in the middle of a series of
-data transformations using the `|>` operator. see the example in `log_return/3` or `log_return/4`.
+data transformations using the `|>` operator.
 
 
 ## Example Usages
@@ -45,16 +45,16 @@ data transformations using the `|>` operator. see the example in `log_return/3` 
     Og.log(:test, __ENV__, :info, inspect_opts: [syntax_colors: [atom: :blue]])
     Og.log(String.to_atom("test"), :info, [pretty: :true, syntax_colors: [atom: :green]])
 
-#### Og.log_return/3
+#### Og.log_r/3
 
     %{first: "john", last: "doe"}
     |> Map.to_list()
     |> Enum.filter( &(&1 === {:first, "john"}))
-    |> Og.log_return()
+    |> Og.log_r()
     |> List.last()
     |> Tuple.to_list()
     |> List.last()
-    |> Og.log_return(:warn)
+    |> Og.log_r(:warn)
     |> String.upcase()
 
 
