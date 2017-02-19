@@ -1,5 +1,19 @@
 # Changelog
 
+
+## v0.2.2
+
+[bug fix]
+
+- Issue with the default options breaking some the `alog` functions.
+
+
+## v0.2.1
+
+[changes]
+
+- Add some docs
+
 ## v0.2.0
 
 [changes]
