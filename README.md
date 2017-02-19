@@ -21,7 +21,7 @@ when logging tuples for example.
 logger `:compile_time_purge_level` configuration setting - defaults to `:debug` when not passed.
 
 
-`log_r/1`, `log_r/2``
+`log_r/1`, `log_r/2`
 
 - Performs operations identical to `Og.log/4` but returns the data in it's original form.
 - Can be useful when one wants to log some intermediate data in the middle of a series of
@@ -60,7 +60,7 @@ data transformations using the `|>` operator.
 
 ## Acknowledgements
 
-- Thanks to [Björn Rochel] for the [Apex library](https://github.com/BjRo/apex) which is
+- Thanks to [Björn Rochel](https://github.com/BjRo) for the [Apex library](https://github.com/BjRo/apex) which is
 used for pretty formatting the data in the `alog` functions.
 
 ## Licence
