@@ -5,7 +5,7 @@ defmodule Og do
   ## Summary
 
 
-  `log/1`, `log/2`, `alog/1`, `alog/2`, `klog/1`, `klog/2`
+  - `log/1`, `log/2`, `alog/1`, `alog/2`, `klog/1`, `klog/2`
 
   - Inspects the data before logging it. For example, this can be helpful for avoiding the `Protocol.UndefinedError`
   when logging tuples for example. There are two choices for formatting the data:
@@ -25,7 +25,7 @@ defmodule Og do
   logger `:compile_time_purge_level` configuration setting. Defaults to `:debug`.
 
 
-  `log_r/1`, `log_r/2`, `alog_r/1`, `alog_r/2`, `klog_r/1`, `klog_r/2`
+  - `log_r/1`, `log_r/2`, `alog_r/1`, `alog_r/2`, `klog_r/1`, `klog_r/2`
 
   - Performs operations identical to `Og.log/4` but returns the data in it's original form.
 
@@ -59,37 +59,37 @@ defmodule Og do
 
   - Long example:
 
-      ```
-      use Mix.Config
-      limiter1 = "===================    [$level]    ========================"
-      datetime = "|---$date $time"
-      metadata = "|---$metadata"
-      node = "|---$node"
-      msg = "|---message:"
-      limiter2 = "==================   [end $level]    ======================="
+  ```
+  use Mix.Config
+  limiter1 = "===================    [$level]    ========================"
+  datetime = "|---$date $time"
+  metadata = "|---$metadata"
+  node = "|---$node"
+  msg = "|---message:"
+  limiter2 = "==================   [end $level]    ======================="
 
-      config :logger,
-        backends: [:console],
-        level: :debug,
-        compile_time_purge_level: :debug,
-        compile_time_application: :my_app,
-        truncate: (4096 * 8),
-        utc_log: :false
+  config :logger,
+    backends: [:console],
+    level: :debug,
+    compile_time_purge_level: :debug,
+    compile_time_application: :my_app,
+    truncate: (4096 * 8),
+    utc_log: :false
 
-      config :logger, :console,
-        level: :debug,
-        format: "#{limiter1}\n#{datetime}\n#{metadata}\n#{node}\n#{msg}\n\n$message\n\n#{limiter2}\n",
-        metadata: [:module, :function, :line]
+  config :logger, :console,
+    level: :debug,
+    format: "#{limiter1}\n#{datetime}\n#{metadata}\n#{node}\n#{msg}\n\n$message\n\n#{limiter2}\n",
+    metadata: [:module, :function, :line]
 
-      config :logger, :og,
-        default_inspector: &Kernel.inspect/2,
-        kernel: [
-          inspect_opts: [width: 70]
-        ],
-        apex: [
-          opts: [numbers: :false, color: :false]
-        ]
-      ```
+  config :logger, :og,
+    default_inspector: &Kernel.inspect/2,
+    kernel: [
+      inspect_opts: [width: 70]
+    ],
+    apex: [
+      opts: [numbers: :false, color: :false]
+    ]
+  ```
 
   """
  require Logger
@@ -113,8 +113,6 @@ defmodule Og do
     Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: data], requires: [Logger])
     :ok
   end
-
-  @doc :false
   def log(data, %Macro.Env{} = env) do
     log(data, env, :debug)
   end
@@ -137,8 +135,6 @@ defmodule Og do
     Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: data], requires: [Logger])
     :ok
   end
-
-  @doc :false
   def klog(data, %Macro.Env{} = env) do
     klog(data, env, :debug)
   end
@@ -161,8 +157,6 @@ defmodule Og do
     Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: data], requires: [Logger])
     :ok
   end
-
-  @doc :false
   def alog(data, %Macro.Env{} = env) do
     alog(data, env, :debug)
   end
@@ -188,8 +182,6 @@ defmodule Og do
     Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: log_data], requires: [Logger])
     data
   end
-
-  @doc :false
   def log_r(data, %Macro.Env{} = env) do
     log_r(data, env, :debug)
   end
@@ -212,8 +204,6 @@ defmodule Og do
     Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: log_data], requires: [Logger])
     data
   end
-
-  @doc :false
   def klog_r(data, %Macro.Env{} = env) do
     klog_r(data, env, :debug)
   end
@@ -236,8 +226,6 @@ defmodule Og do
     Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: log_data], requires: [Logger])
     data
   end
-
-  @doc :false
   def alog_r(data, %Macro.Env{} = env) do
     alog_r(data, env, :debug)
   end

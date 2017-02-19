@@ -7,13 +7,13 @@
 
 Add óg to your list of dependencies in `mix.exs`:
 
-    def deps, do: [{:og, "~> 0.2"}]
+  def deps, do: [{:og, "~> 0.2"}]
 
 
 ## Summary
 
 
-`log/1`, `log/2`, `log/3`, `log/4`
+- `log/1`, `log/2`, `log/3`, `log/4`
 
 - Inspects the data before logging it. For example, this can be helpful for avoiding the `Protocol.UndefinedError`
 when logging tuples for example.
@@ -21,7 +21,7 @@ when logging tuples for example.
 logger `:compile_time_purge_level` configuration setting - defaults to `:debug` when not passed.
 
 
-`log_r/1`, `log_r/2`
+- `log_r/1`, `log_r/2`
 
 - Performs operations identical to `Og.log/4` but returns the data in it's original form.
 - Can be useful when one wants to log some intermediate data in the middle of a series of
