@@ -87,7 +87,7 @@ defmodule Og do
       inspect_opts: [width: 70]
     ],
     apex: [
-      opts: [numbers: :false, color: :false]
+      format_opts: [numbers: :false, color: :false]
     ]
   ```
 
@@ -95,9 +95,10 @@ defmodule Og do
  require Logger
  @default_inspector (Application.get_env(:logger, :og) || []) |> Keyword.get(:default_inspector, &Kernel.inspect/2)
  @kernel_opts (Application.get_env(:logger, :og) || []) |> Keyword.get(:kernel, [])
+ @kernel_inspect_opts Keyword.get(@kernel_opts, :inspect_opts, [])
  @apex_opts (Application.get_env(:logger, :og) || []) |> Keyword.get(:apex, [])
- @default_opts if @default_inspector == &Kernel.inspect/2, do: Keyword.get(@kernel_opts, :inspect_opts, []),
-    else: Keyword.get(@apex_opts, :opts, [numbers: :false, color: :false])
+ @apex_format_opts Keyword.get(@apex_opts, :format_opts, [color: :false, numbers: :false])
+ @default_opts if @default_inspector == &Kernel.inspect/2, do: @kernel_inspect_opts, else: @apex_format_opts
 
 
   # Public
@@ -131,7 +132,7 @@ defmodule Og do
   @doc "Logs the data formatted with the `Kernel.inspect/2` function and log_level passed as the second argument"
   @spec klog(any, atom) :: any
   def klog(data, log_level) when is_atom(log_level) do
-    data = Kernel.inspect(data, @default_opts)
+    data = Kernel.inspect(data, @kernel_inspect_opts)
     Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: data], requires: [Logger])
     :ok
   end
@@ -141,7 +142,7 @@ defmodule Og do
 
   @doc :false
   def klog(data, %Macro.Env{} = env, log_level) do
-    data = base_details(env) <> Kernel.inspect(data, @default_opts)
+    data = base_details(env) <> Kernel.inspect(data, @kernel_inspect_opts)
     Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: data], requires: [Logger])
     :ok
   end
@@ -153,7 +154,7 @@ defmodule Og do
   @doc "Logs the data formatted with the `Apex.Format.format/2` function and log_level passed as the second argument"
   @spec alog(any, atom) :: any
   def alog(data, log_level) when is_atom(log_level) do
-    data = Apex.Format.format(data, @apex_opts[:opts])
+    data = Apex.Format.format(data, @apex_format_opts)
     Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: data], requires: [Logger])
     :ok
   end
@@ -163,7 +164,7 @@ defmodule Og do
 
   @doc :false
   def alog(data, %Macro.Env{} = env, log_level) do
-    data = base_details(env) <> Apex.Format.format(data, @apex_opts[:opts])
+    data = base_details(env) <> Apex.Format.format(data, @apex_format_opts)
     Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: data], requires: [Logger])
     :ok
   end
@@ -200,7 +201,7 @@ defmodule Og do
   @doc "Logs the data formatted with the `Kernel.inspect/2` function and log_level passed as the second argument"
   @spec klog_r(any, atom) :: any
   def klog_r(data, log_level) when is_atom(log_level) do
-    log_data = Kernel.inspect(data, @default_opts)
+    log_data = Kernel.inspect(data, @kernel_inspect_opts)
     Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: log_data], requires: [Logger])
     data
   end
@@ -210,7 +211,7 @@ defmodule Og do
 
   @doc :false
   def klog_r(data, %Macro.Env{} = env, log_level) do
-    log_data = base_details(env) <> Kernel.inspect(data, @default_opts)
+    log_data = base_details(env) <> Kernel.inspect(data, @kernel_inspect_opts)
     Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: log_data], requires: [Logger])
     data
   end
@@ -222,7 +223,7 @@ defmodule Og do
   @doc "Logs the data formatted with the `Apex.Format.format/2` function and log_level passed as the second argument"
   @spec alog_r(any, atom) :: any
   def alog_r(data, log_level) when is_atom(log_level) do
-    log_data = Apex.Format.format(data, @apex_opts[:opts])
+    log_data = Apex.Format.format(data, @apex_format_opts)
     Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: log_data], requires: [Logger])
     data
   end
@@ -232,7 +233,7 @@ defmodule Og do
 
   @doc :false
   def alog_r(data, %Macro.Env{} = env, log_level) do
-    log_data = base_details(env) <> Apex.Format.format(data, @apex_opts[:opts])
+    log_data = base_details(env) <> Apex.Format.format(data, @apex_format_opts)
     Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: log_data], requires: [Logger])
     data
   end
@@ -249,14 +250,15 @@ defmodule Og do
   ## To be deprecated
   @doc :false
   def log_return(data, env, log_level) when is_map(env), do: log_r(data, env, log_level)
-  def log_return(data, log_level, inspect_opts) do
-    log_r(data, log_level, inspect_opts)
+  def log_return(data, log_level, _inspect_opts) do
+    IO.puts("Please note that passing the inspect_opts to log_return has now been deprecated, use another function")
+    log_r(data, log_level)
   end
 
   ## To be deprecated
   @doc :false
   def log_return(data, env, log_level, _inspect_opts) do
-    IO.puts("Please note that passing the inspect_opts has now been deprecated, use another function")
+    IO.puts("Please note that passing the inspect_opts to log_return has now been deprecated, use another function")
     log_r(data, env, log_level)
   end
 
