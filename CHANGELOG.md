@@ -1,20 +1,27 @@
 # Changelog
 
-## v0.2
+## v0.2.0
 
 [changes]
 - fix compiler warnings on newer elixir verson.
 - Add pull request for `travis.yml`
-- remove docs about `conn` and `conn_context` as considering moving these functions to a new module. They
-add a lot of bulk to the docs. For now maintain as public functions without `@doc`.
-
+- remove docs about `log/3`, `log/4` and so on. Add a lot of bulk to the api.
+Users can read source code if those functions are needed.
 
 [breaking changes]
-- simplify the api, breaks one of the `log/3` ad `log_return/3` functions.
+- deprecate `context` and `conn_context` functions. Perhaps will create a separate
+package for those.
+- `log_return` is now renamed to `log_r` for brevity but api will continue to work for
+`log_return` for now at least.
 
 [enhancements]
-- Able to add `inspect_opts` to the config file so that they will be applied by default on
+- able to add `inspect_opts` to the config file so that they will be applied by default on
 all logs. Example `config :og, inspect_opts: [syntax_colors: [atom: :blue]]`
+- add an option to use [Apex](https://github.com/BjRo/apex) for the formatting. See `https://github.com/BjRo/apex`.
+- add `klog` function for `Kernel.inspect/2` on data and `alog` function for `Apex.Format.format/2` on data.
+- add `klog_r` function for `Kernel.inspect/2` on data and `alog_r` function for `Apex.Format.format/2` on data.
+- new dependency on `Apex`.
+
 
 ## v0.1.0
 

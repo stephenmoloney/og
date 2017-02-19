@@ -1,5 +1,4 @@
 defmodule Og.TestSupport do
-  use Plug.Test
   require Og
   alias ExUnit.CaptureLog
   @data "test"
@@ -70,60 +69,5 @@ defmodule Og.TestSupport do
       end
     )
   end
-
-
-  def context_test1() do
-    CaptureLog.capture_log(
-      [level: :debug],
-      fn() ->
-        Og.context(__ENV__)
-      end
-    )
-  end
-
-
-  def context_test2() do
-    CaptureLog.capture_log(
-      [level: :debug],
-      fn() ->
-        Og.context(__ENV__, :info)
-      end
-    )
-  end
-
-
-  def conn_context_test1() do
-    conn = Plug.Test.conn(:get, "/test", :nil)
-    CaptureLog.capture_log(
-      [level: :debug],
-      fn() ->
-        Og.conn_context(conn, __ENV__)
-      end
-    )
-  end
-
-
-  def conn_context_test2() do
-    conn = Plug.Test.conn(:get, "/test", :nil)
-    CaptureLog.capture_log(
-      [level: :debug],
-      fn() ->
-        Og.conn_context(conn, __ENV__, :info)
-      end
-    )
-  end
-
-
-
-  def conn_context_test3() do
-    conn = Plug.Test.conn(:get, "/test", :nil)
-    CaptureLog.capture_log(
-      [level: :debug],
-      fn() ->
-        Og.conn_context(conn, __ENV__, :warn, [:method, :req_headers, :peer])
-      end
-    )
-  end
-
 
 end

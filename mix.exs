@@ -7,7 +7,7 @@ defmodule Og.Mixfile do
      app: :og,
      name: "Óg",
      version: @version,
-     elixir: "~> 1.1 or ~> 1.2 or ~> 1.3 or ~> 1.4",
+     elixir: ">= 1.2.0",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      elixirc_paths: elixirc_paths(Mix.env),
@@ -28,7 +28,7 @@ defmodule Og.Mixfile do
 
   def deps() do
     [
-      {:plug,  "~> 1.0", only: [:dev, :test]},
+      {:apex,  "~> 1.0"},
       {:earmark, "~> 1.0", only: :dev},
       {:ex_doc,  "~> 0.14", only: :dev}
     ]

@@ -2,7 +2,7 @@
 /cover
 /deps
 /doc
+/.idea
+/.deprecated
 erl_crash.dump
 *.ez
-.idea
-mix.lock

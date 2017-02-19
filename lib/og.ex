@@ -5,235 +5,271 @@ defmodule Og do
   ## Summary
 
 
-  `log/1`, `log/2`, `log/3`, `log/4`
+  `log/1`, `log/2`, `alog/1`, `alog/2`, `klog/1`, `klog/2`
 
   - Inspects the data before logging it. For example, this can be helpful for avoiding the `Protocol.UndefinedError`
-  when logging tuples for example.
-  - *Optionally* pass the  `__ENV__` environment variable to log the module, line and function, thereby,
-  being able to identify exactly where the log was made.
+  when logging tuples for example. There are two choices for formatting the data:
+
+      1. `Kernel.inspect/2` (from erlang core)
+      2. `Apex.Format.format/2` from [Apex](https://hex.pm/packages/apex) library for pretty printing
+
+  - Configure the inspection function in the `config.exs` file by passing:
+
+      config :logger, :og, default_inspector: Kernel.inspect/2
+
+      or
+
+      config :logger, :og, default_inspector: Apex.Format.format/2
+
   - *Optionally* pass the log_level `:debug`, `:info`, `:warn` or `:error` which will respect the
-  logger `:compile_time_purge_level` configuration setting.
-  - *Optionally* pass the inspect_opts argument to customise the inspect options in the `Kernel.inspect/2`
-  function.
+  logger `:compile_time_purge_level` configuration setting. Defaults to `:debug`.
 
 
-  `log_return/1`, `log_return/2`, `log_return/3`, `log_return/4`
+  `log_r/1`, `log_r/2`, `alog_r/1`, `alog_r/2`, `klog_r/1`, `klog_r/2`
 
   - Performs operations identical to `Og.log/4` but returns the data in it's original form.
-  - The same options apply as for the `log` functions.
+
   - Can be useful when one wants to log some intermediate data in the middle of a series of
   data transformations using the `|>` operator. see the example in `log_return/4`.
 
-  ## Inspect Opts
 
-  - Defaults to the elixir default, `%Inspect.Opts{} |> Map.delete(:__struct__) |> Map.to_list()`
-  - Can be modified in the `config.exs` file for the `Og` library and will be applied to all `log` functions.
-  - Read more at [hex docs](https://hexdocs.pm/elixir/Inspect.Opts.html)
-  - If the `inspect_opts` are changed in the `config.exs file, then the opts will be applied to all `log` and
-  `log_return` function calls.
-  - To override the inspect opts, pass the new settings to the `log` or `log_return` function, the application
-  log settings in the `config.exs` file will then be completely ignored and the new `inspect_opts` will be merged
-  with the elixir default `inspect_opts` settings.
+  ## Example configuration
 
-
-  ## Example
+  - Short example:
 
   ```
-  config :og, inspect_opts: [
-    pretty: :true,
-    width: 0,
-    syntax_colors: [atom: :blue]
-  ]
+  use Mix.Config
+
+  config :logger,
+    backends: [:console],
+    level: :debug,
+    compile_time_purge_level: :debug,
+    compile_time_application: :my_app,
+    truncate: (4096 * 8),
+    utc_log: :false
+
+  config :logger, :console,
+    level: :debug,
+    format: "$time $metadata [$level] $message\n",
+    metadata: []
+
+  config :logger, :og,
+    default_inspector: &Kernel.inspect/2
   ```
+
+  - Long example:
+
+      ```
+      use Mix.Config
+      limiter1 = "===================    [$level]    ========================"
+      datetime = "|---$date $time"
+      metadata = "|---$metadata"
+      node = "|---$node"
+      msg = "|---message:"
+      limiter2 = "==================   [end $level]    ======================="
+
+      config :logger,
+        backends: [:console],
+        level: :debug,
+        compile_time_purge_level: :debug,
+        compile_time_application: :my_app,
+        truncate: (4096 * 8),
+        utc_log: :false
+
+      config :logger, :console,
+        level: :debug,
+        format: "#{limiter1}\n#{datetime}\n#{metadata}\n#{node}\n#{msg}\n\n$message\n\n#{limiter2}\n",
+        metadata: [:module, :function, :line]
+
+      config :logger, :og,
+        default_inspector: &Kernel.inspect/2,
+        kernel: [
+          inspect_opts: [width: 70]
+        ],
+        apex: [
+          opts: [numbers: :false, color: :false]
+        ]
+      ```
 
   """
  require Logger
- @default_conn_keys  [:method, :request_path]
- @elixir_default_inspect_opts %Inspect.Opts{} |> Map.delete(:__struct__) |> Map.to_list()
- @application_default_inspect_opts Application.get_env(:og, :inspect_opts)
+ @default_inspector (Application.get_env(:logger, :og) || []) |> Keyword.get(:default_inspector, &Kernel.inspect/2)
+ @kernel_opts (Application.get_env(:logger, :og) || []) |> Keyword.get(:kernel, [])
+ @apex_opts (Application.get_env(:logger, :og) || []) |> Keyword.get(:apex, [])
+ @default_opts if @default_inspector == &Kernel.inspect/2, do: Keyword.get(@kernel_opts, :inspect_opts, []),
+    else: Keyword.get(@apex_opts, :opts, [numbers: :false, color: :false])
 
 
   # Public
 
-  @doc "log/1 -- see docs of `log/4`"
+  @doc "Logs the data formatted with the `default_inspector` function and log_level `:debug`"
   @spec log(any) :: :ok
-  def log(data), do: log(data, :debug, [])
+  def log(data), do: log(data, :debug)
 
-  @doc "log/2 -- see docs of `log/4`"
-  @spec log(any, Macro.Env.t |atom) :: :ok
-  def log(data, log_level) when is_atom(log_level), do: log(data, log_level, [])
-  def log(data, env), do: log(data, env, :debug, [])
-
-  @doc "log/3 -- see docs of `log/4`"
-  @spec log(any, Macro.Env.t | atom, atom | list) :: :ok
-  def log(data, env, log_level) when is_map(env), do: log(data, env, log_level, [])
-  def log(data, log_level, []) when is_atom(log_level) do
-    inspect_opts = merge_inspect_opts(@elixir_default_inspect_opts, @application_default_inspect_opts)
-    log(data, log_level, inspect_opts)
-  end
-  def log(data, log_level, inspect_opts) when is_atom(log_level) do
-    merge_inspect_opts(@elixir_default_inspect_opts, inspect_opts)
-    data = unless is_binary(data), do: Kernel.inspect(data, inspect_opts), else: data
+  @doc "Logs the data formatted with the `default_inspector` function and log_level passed as the second argument"
+  @spec log(any, atom) :: :ok
+  def log(data, log_level) when is_atom(log_level) do
+    data = @default_inspector.(data, @default_opts)
     Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: data], requires: [Logger])
     :ok
   end
 
-  @doc ~S"""
-  Logs data after passing `data` first to the `Kernel.inspect/2` along with the environment of the caller.
+  @doc :false
+  def log(data, %Macro.Env{} = env) do
+    log(data, env, :debug)
+  end
 
-  ## Arguments
+  @doc :false
+  def log(data, %Macro.Env{} = env, log_level) do
+    data = base_details(env) <> @default_inspector.(data, @default_opts)
+    Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: data], requires: [Logger])
+    :ok
+  end
 
-      data: data to be logged
-      env: environment of the function caller
-      log_level: `:info` or `:debug` or `:warn` or `:error`
-      inspect_opts: Keyword list of inspect options. see [here](http://elixir-lang.org/docs/stable/elixir/Kernel.html#inspect/2)
+  @doc "Logs the data formatted with the `Kernel.inspect/2` function and log_level `:debug`"
+  @spec klog(any) :: :ok
+  def klog(data), do: klog(data, :debug)
 
-  ## Example - `log/1`
+  @doc "Logs the data formatted with the `Kernel.inspect/2` function and log_level passed as the second argument"
+  @spec klog(any, atom) :: any
+  def klog(data, log_level) when is_atom(log_level) do
+    data = Kernel.inspect(data, @default_opts)
+    Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: data], requires: [Logger])
+    :ok
+  end
 
-      Og.log(String.to_atom("test"))
+  @doc :false
+  def klog(data, %Macro.Env{} = env) do
+    klog(data, env, :debug)
+  end
 
-  ## Example - `log/2`
+  @doc :false
+  def klog(data, %Macro.Env{} = env, log_level) do
+    data = base_details(env) <> Kernel.inspect(data, @default_opts)
+    Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: data], requires: [Logger])
+    :ok
+  end
 
-      Og.log(String.to_atom("test"), __ENV__)
+  @doc "Logs the data formatted with the `Apex.Format.format/2` function and log_level `:debug`"
+  @spec alog(any) :: :ok
+  def alog(data), do: alog(data, :debug)
 
-  ## Example - `log/2`
+  @doc "Logs the data formatted with the `Apex.Format.format/2` function and log_level passed as the second argument"
+  @spec alog(any, atom) :: any
+  def alog(data, log_level) when is_atom(log_level) do
+    data = Apex.Format.format(data, @apex_opts[:opts])
+    Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: data], requires: [Logger])
+    :ok
+  end
 
-      Og.log(String.to_atom("test"), :error)
+  @doc :false
+  def alog(data, %Macro.Env{} = env) do
+    alog(data, env, :debug)
+  end
 
-  ## Example - `log/3`
-
-      Og.log(String.to_atom("test"), __ENV__, :warn)
-
-  ## Example - `log/3`
-
-      Og.log(String.to_atom("test"), :info, [pretty: :true])
-      Og.log(String.to_atom("test"), :info, [pretty: :true, syntax_colors: [atom: :red]])
-
-  ## Example - `log/4`
-
-      list = Enum.reduce(1..10, [], fn(x, acc) -> [one: "1", two: "2"] ++ acc end)
-      Og.log(list, __ENV__, :info, [pretty: :true, syntax_colors: [list: :green, atom: :blue], width: 0])
-      Og.log(list, __ENV__, :info, [])
-
-  """
-  @spec log(any, Macro.Env.t, atom, Keyword.t) :: :ok
-  def log(data, env, log_level, inspect_opts) do
-    String.strip(base_details(env)) <> ", " <> Kernel.inspect(data, inspect_opts)
-    |> log(log_level, inspect_opts)
+  @doc :false
+  def alog(data, %Macro.Env{} = env, log_level) do
+    data = base_details(env) <> Apex.Format.format(data, @apex_opts[:opts])
+    Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: data], requires: [Logger])
+    :ok
   end
 
 
-  @doc "log_return/1 -- see docs of `log_return/4`"
-  @spec log_return(any) :: any
-  def log_return(data), do: log_return(data, :debug, [])
+  @doc "Logs the data formatted with the `default_inspector` function and log_level `:debug`.
+  Returns the original data"
+  @spec logr(any) :: any
+  def logr(data), do: log(data, :debug)
 
-  @doc "log_return/2 -- see docs of `log_return/4`"
-  @spec log_return(any, Macro.Env.t | atom) :: any
-  def log_return(data, log_level) when is_atom(log_level), do: log_return(data, log_level, [])
-  def log_return(data, env), do: log_return(data, env, :debug, [])
+  @doc "Logs the data formatted with the `default_inspector` function and log_level passed as the second argument.
+  Returns the original data"
+  @spec log_r(any, atom) :: any
+  def log_r(data, log_level) when is_atom(log_level) do
+    log_data = @default_inspector.(data, @default_opts)
+    Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: log_data], requires: [Logger])
+    data
+  end
 
-  @doc "log_return/3 -- see docs of `log_return/4`"
-  @spec log_return(any, Macro.Env.t | atom, atom | list) :: any
-  def log_return(data, env, log_level) when is_map(env), do: log_return(data, env, log_level, [])
+  @doc :false
+  def log_r(data, %Macro.Env{} = env) do
+    log_r(data, env, :debug)
+  end
+
+  @doc :false
+  def log_r(data, %Macro.Env{} = env, log_level) do
+    log_data = base_details(env) <> @default_inspector.(data, @default_opts)
+    Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: log_data], requires: [Logger])
+    data
+  end
+
+  @doc "Logs the data formatted with the `Kernel.inspect/2` function and log_level `:debug`"
+  @spec klog_r(any) :: any
+  def klog_r(data), do: klog(data, :debug)
+
+  @doc "Logs the data formatted with the `Kernel.inspect/2` function and log_level passed as the second argument"
+  @spec klog_r(any, atom) :: any
+  def klog_r(data, log_level) when is_atom(log_level) do
+    log_data = Kernel.inspect(data, @default_opts)
+    Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: log_data], requires: [Logger])
+    data
+  end
+
+  @doc :false
+  def klog_r(data, %Macro.Env{} = env) do
+    klog_r(data, env, :debug)
+  end
+
+  @doc :false
+  def klog_r(data, %Macro.Env{} = env, log_level) do
+    log_data = base_details(env) <> Kernel.inspect(data, @default_opts)
+    Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: log_data], requires: [Logger])
+    data
+  end
+
+  @doc "Logs the data formatted with the `Apex.Format.format/2` function and log_level `:debug`"
+  @spec alog_r(any) :: any
+  def alog_r(data), do: alog(data, :debug)
+
+  @doc "Logs the data formatted with the `Apex.Format.format/2` function and log_level passed as the second argument"
+  @spec alog_r(any, atom) :: any
+  def alog_r(data, log_level) when is_atom(log_level) do
+    log_data = Apex.Format.format(data, @apex_opts[:opts])
+    Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: log_data], requires: [Logger])
+    data
+  end
+
+  @doc :false
+  def alog_r(data, %Macro.Env{} = env) do
+    alog_r(data, env, :debug)
+  end
+
+  @doc :false
+  def alog_r(data, %Macro.Env{} = env, log_level) do
+    log_data = base_details(env) <> Apex.Format.format(data, @apex_opts[:opts])
+    Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: log_data], requires: [Logger])
+    data
+  end
+
+  ## To be deprecated
+  @doc :false
+  def log_return(data), do: log_r(data, :debug)
+
+  ## To be deprecated
+  @doc :false
+  def log_return(data, log_level) when is_atom(log_level), do: log_r(data, log_level)
+  def log_return(data, env), do: log_r(data, env, :debug)
+
+  ## To be deprecated
+  @doc :false
+  def log_return(data, env, log_level) when is_map(env), do: log_r(data, env, log_level)
   def log_return(data, log_level, inspect_opts) do
-    log(data, log_level, inspect_opts)
-    data
+    log_r(data, log_level, inspect_opts)
   end
 
-
-  @doc """
-  Logs `data` term by using the Kernel.inspect/2 and returns the original data type. Useful in a pipeline of functions.
-
-  ## Arguments
-
-      data: data to be logged
-      env: environment of the function caller
-      log_level: `:info` or `:debug` or `:warn` or `:error`
-      inspect_opts: Keyword list of inspect options. see [here](http://elixir-lang.org/docs/stable/elixir/Kernel.html#inspect/2)
-
-
-  ## Example - `log_return/1`
-
-      Og.log_return(String.to_atom("test"))
-
-  ## Example - `log_return/1`
-
-       %{first: "john", last: "doe"}
-       |> Map.to_list()
-       |> Enum.filter( &(&1 === {:first, "john"}))
-       |> Og.log_return()
-       |> List.last()
-       |> Tuple.to_list()
-       |> List.last()
-       |> Og.log_return(__ENV__, :warn)
-       |> String.upcase()
-
-  ## Example - `log_return/2`
-
-      Og.log_return(String.to_atom("test"), __ENV__)
-
-  ## Example - `log_return/2`
-
-      Og.log_return(String.to_atom("test"), :error)
-
-  ## Example - `log_return/3`
-
-      Og.log_return(String.to_atom("test"), __ENV__, :warn)
-
-  ## Example - `log_return/3`
-
-      Og.log_return(String.to_atom("test"), __ENV__, [pretty: :true])
-
-
-  ## Example - `log_return/4`
-
-    list = Enum.reduce(1..10, [], fn(x, acc) -> [one: "1", two: "2"] ++ acc end)
-    Og.log_return(list, __ENV__, :info, [pretty: :true, syntax_colors: [list: :red, atom: :red], width: 0])
-
-  """
-  @spec log_return(any,  atom, Keyword.t) :: any
-  def log_return(data, env, log_level, inspect_opts) do
-    String.strip(base_details(env)) <> ", " <> Kernel.inspect(data, inspect_opts)
-    |> log(log_level, inspect_opts)
-    data
-  end
-
-
-  # Public docless functions
-
+  ## To be deprecated
   @doc :false
-  def context(env), do: context(env, :debug, [])
-
-  @doc :false
-  def context(env, log_level), do: context(env, log_level, [])
-
-  @doc :false
-  def context(env, log_level, inspect_opts) do
-    base_details(env) |> log(log_level, inspect_opts)
-  end
-
-  @doc :false
-  def conn_context(conn, env), do: conn_context(conn, env, :debug, @default_conn_keys, [])
-
-  @doc :false
-  def conn_context(conn, env, log_level), do: conn_context(conn, env, log_level, @default_conn_keys, [])
-
-  @doc :false
-  @spec conn_context(Plug.Conn.t, Macro.Env.t, atom, list) :: :ok
-  def conn_context(conn, env, log_level, conn_fields), do: conn_context(conn, env, log_level, conn_fields, [])
-
-  @doc :false
-  def conn_context(conn, env, log_level, conn_fields, inspect_opts) do
-    extra_args =
-    Enum.reduce(conn_fields, "", fn(field, acc) ->
-      if is_binary(Map.get(conn, field)) do
-        acc <> Atom.to_string(field) <> ": " <> Map.get(conn, field) <> ", "
-      else
-        acc <> Atom.to_string(field) <> ": " <> Kernel.inspect(Map.get(conn, field), inspect_opts) <> ", "
-      end
-    end) |> String.rstrip(?\s) |> String.rstrip(?,)
-    args = base_details(env) <> ", conn details: { " <> extra_args <> " }"
-    log(args, log_level, inspect_opts)
+  def log_return(data, env, log_level, _inspect_opts) do
+    IO.puts("Please note that passing the inspect_opts has now been deprecated, use another function")
+    log_r(data, env, log_level)
   end
 
 
@@ -241,28 +277,22 @@ defmodule Og do
 
 
   defp base_details(env) do
-    {function, arity} =
+    put_into_string = fn(elem, name) ->
+      case elem do
+        :nil -> :nil
+        _ -> "#{name}: #{elem}, "
+      end
+    end
+    function =
     case env.function do
-      :nil ->  {:nil, :nil}
-      {function, arity} -> {function, arity}
+      :nil ->  :nil
+      {function, arity} -> "#{function}/#{arity}"
     end
-    module = env.module || :nil
-    line = env.line || :nil
-    if env.function == :nil do
-      "module: #{module}, function: #{env.function}, line: #{line} "
-    else
-      "module: #{module}, function: #{function}/#{arity}, line: #{line} "
-    end
+    application = Application.get_env(:logger, :compile_time_application) |> put_into_string.("application")
+    module = put_into_string.(env.module, "module")
+    function = put_into_string.(function, "function")
+    line = put_into_string.(env.line, "line") |> String.trim_trailing(" ") |> String.trim_trailing(",")
+    "#{application}#{module}#{function}#{line}:\n"
   end
-
-  # The keys in `opts2` will have precedence over duplicate keys in `opts1`
-  @doc :false
-  def merge_inspect_opts(opts1, opts2) do
-    opts1 = Enum.into(opts1, %{})
-    opts2 = Enum.into(opts2, %{})
-    opts = Map.merge(opts1, opts2)
-    Enum.into(opts, [])
-  end
-
 
 end
