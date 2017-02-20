@@ -1,6 +1,13 @@
 # Changelog
 
 
+## v0.2.3
+
+[bug fix]
+
+- Misnamed function during refactoring, `logr` -> `log_r`
+
+
 ## v0.2.2
 
 [bug fix]
