@@ -172,8 +172,8 @@ defmodule Og do
 
   @doc "Logs the data formatted with the `default_inspector` function and log_level `:debug`.
   Returns the original data"
-  @spec logr(any) :: any
-  def logr(data), do: log(data, :debug)
+  @spec log_r(any) :: any
+  def log_r(data), do: log(data, :debug)
 
   @doc "Logs the data formatted with the `default_inspector` function and log_level passed as the second argument.
   Returns the original data"
