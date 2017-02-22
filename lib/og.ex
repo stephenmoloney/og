@@ -173,7 +173,7 @@ defmodule Og do
   @doc "Logs the data formatted with the `default_inspector` function and log_level `:debug`.
   Returns the original data"
   @spec log_r(any) :: any
-  def log_r(data), do: log(data, :debug)
+  def log_r(data), do: log_r(data, :debug)
 
   @doc "Logs the data formatted with the `default_inspector` function and log_level passed as the second argument.
   Returns the original data"
@@ -196,7 +196,7 @@ defmodule Og do
 
   @doc "Logs the data formatted with the `Kernel.inspect/2` function and log_level `:debug`"
   @spec klog_r(any) :: any
-  def klog_r(data), do: klog(data, :debug)
+  def klog_r(data), do: klog_r(data, :debug)
 
   @doc "Logs the data formatted with the `Kernel.inspect/2` function and log_level passed as the second argument"
   @spec klog_r(any, atom) :: any
@@ -218,7 +218,7 @@ defmodule Og do
 
   @doc "Logs the data formatted with the `Apex.Format.format/2` function and log_level `:debug`"
   @spec alog_r(any) :: any
-  def alog_r(data), do: alog(data, :debug)
+  def alog_r(data), do: alog_r(data, :debug)
 
   @doc "Logs the data formatted with the `Apex.Format.format/2` function and log_level passed as the second argument"
   @spec alog_r(any, atom) :: any

@@ -1,6 +1,15 @@
 # Changelog
 
 
+## v0.2.4
+
+[bug fix]
+
+- Some of the `log_r`, `alog_r` and `klog_r` functions were pointing to the
+ incorrect `log`, `alog` and `klog` functions causing the tuple `:ok` to be returned rather than
+ the expected data.
+
+
 ## v0.2.3
 
 [bug fix]
