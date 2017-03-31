@@ -4,14 +4,14 @@
 Og is a debugging tool for development environments.
 
 
-## Note:
+### Note:
 
 - Do not use release versions of `Og` less than 1.0 due to a security issue with
 the use of `Code.eval_string/3`. Read [more in the changelog](https://github.com/stephenmoloney/og/blob/master/CHANGELOG.md#v024).
 - Functions `Og.log/2` and `Og.log_r/2` are debugging tools for use during development only.
 
 
-## Installation
+### Installation
 
 Add óg to your list of dependencies in `mix.exs`:
 
@@ -21,7 +21,7 @@ Ensure that `:logger` is started in the applications:
 
     `def application do [applications: [:logger]] end`
 
-## Summary
+### Summary
 
 - `log/2` - logs the data transformed by the inspector function
 and returns `:ok`
@@ -45,7 +45,7 @@ There are two choices of inspector functions for formatting the data:
     2. [inspector: :apex] - `&Apex.Format.format/2` from [Apex](https://hex.pm/packages/apex) library for pretty printing
 
 
-## Example usage
+### Example usage
 
   - optional configuration in `config.exs`
 ```elixir
@@ -54,22 +54,35 @@ config :logger, :og,
   apex_opts: [numbers: :false, color: :false]
 ```
 
-  - some examples
+### some examples
+
+
+  - Basic logging
 ```elixir
-
-# Basic logging
 Og.log(:test)
+```
 
-# Logging at the `:warn` level
+
+- Logging at the `:warn` level
+```elixir
 Og.log(:test, level: :warn)
+```
 
-# Logging at the `:warn` level and with __ENV__ specified to get richer information
+
+- Logging at the `:warn` level and with __ENV__ specified to get richer information
+```elixir
 Og.log(:test, level: :warn, env: __ENV__)
+````
 
-# Logging with the Apex inspector
+
+- Logging with the Apex inspector
+```elixir
 Og.log(:test, inspector: :apex)
+```
 
-#### Logging inside a chain of piped functions
+
+- Logging inside a chain of piped functions
+```elixir
 defmodule OgTest do
   def log() do
     %{first: "john", last: "doe"}
@@ -87,15 +100,16 @@ OgTest.log()
 ```
 
 
-## Acknowledgements
+
+### Acknowledgements
 
 - Credit to [Björn Rochel](https://github.com/BjRo) for the [Apex library](https://github.com/BjRo/apex).
 Setting opts to `[inspector: :apex]` will use the `Apex.Format.format/2` function from the apex library.
 
-## Todo
+### Todo
 
 - [ ] Investigate adding a custom formatting module as an optional additional means of logging.
 
-## Licence
+### Licence
 
 MIT
