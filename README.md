@@ -3,10 +3,8 @@
 [Óg](http://hexdocs.pm/og/Og.html) is a small collection of debugging functions for use during development.
 
 
-### Warning:
+### Note
 
-- Do not use release versions of `Og` less than 1.0 due to a security issue with
-the use of `Code.eval_string/3`. Read [more in the changelog](https://github.com/stephenmoloney/og/blob/master/CHANGELOG.md#v024).
 - Functions `Og.log/2` and `Og.log_r/2` are debugging tools for use during development only.
 
 
