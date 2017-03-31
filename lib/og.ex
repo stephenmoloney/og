@@ -72,50 +72,32 @@ defmodule Og do
 
   ## Notes:
 
-    - There is an overhead in converting the data to
-      other formats such as a binary representation. Hence,
-      `Og.log/2` and `Og.log_r/2` are preferred for
-      development debugging purposes only.
+  There is an overhead in converting the data to
+  other formats such as a binary representation. Hence,
+  `Og.log/2` and `Og.log_r/2` are preferred for
+  development debugging purposes only.
 
   ## opts
 
-
-      - ***level***: defaults to `:debug`.
-
-          - Examples:
-
-              Og.log(%{test: "test"}, [])
-
-              Og.log(%{test: "test"}, [level: :info])
+  ***level***: defaults to `:debug`.
+  ***env***: defaults to `:nil`.
+  ***inspector***: defaults to `:default_inspector` in the application config.exs and if
+  not set, otherwise, defaults to `&Kernel.inspect/2`.
+  The inspector function determines how the data will be transformed. Currently
+  the options are `&Kernel.inspect/2` or `&Apex.Format.format/2`.
 
 
-      - ***env***: defaults to `:nil`.
+  ## Examples:
 
-      Can be passed if details of the caller are desired in the output.
-      Note: defaulting to `__CALLER__` special form
-      is not desired since that would require converting this function to a
-      macro reducing utility as a debugging tool.
+      Og.log(%{test: "test"})
 
-          - Examples:
+      Og.log(%{test: "test"}, level: :info)
 
-              Og.log(%{test: "test"}, [])
+      Og.log(%{test: "test"}, env: __ENV__)
 
-              Og.log(%{test: "test"}, [env: __ENV__])
-
-
-      - ***inspector***: defaults to `:default_inspector` in the application config.exs and if
-       not set, otherwise, defaults to `&Kernel.inspect/2`.
-
-       The inspector function determines how the data will be transformed. Currently
-       the options are `&Kernel.inspect/2` or `&Apex.Format.format/2`.
-
-          - Examples:
-
-              Og.log(%{test: "test"}, [])
-
-              Og.log(%{test: "test"}, [inspector: Apex.Format.format/2])
+      Og.log(%{test: "test"}, inspector: :apex)
   """
-  @spec log(any, Keyword.t | Macro.Env.t) :: :ok
+  @spec log(any, Keyword.t) :: :ok
   def log(data, opts \\ []) do
     inspector = Keyword.get(opts, :inspector, :kernel)
     inspector_opts =
@@ -144,48 +126,30 @@ defmodule Og do
 
   ## Notes:
 
-    - There is an overhead in converting the data to
-      other formats such as a binary representation. Hence,
-      `Og.log/2` and `Og.log_r/2` are preferred for
-      development debugging purposes only.
+  There is an overhead in converting the data to
+  other formats such as a binary representation. Hence,
+  `Og.log/2` and `Og.log_r/2` are preferred for
+  development debugging purposes only.
 
   ## opts
 
-
-      - ***level***: defaults to `:debug`.
-
-          - Examples:
-
-              Og.log(%{test: "test"}, [])
-
-              Og.log(%{test: "test"}, [level: :info])
+  ***level***: defaults to `:debug`.
+  ***env***: defaults to `:nil`.
+  ***inspector***: defaults to `:default_inspector` in the application config.exs and if
+  not set, otherwise, defaults to `&Kernel.inspect/2`.
+  The inspector function determines how the data will be transformed. Currently
+  the options are `&Kernel.inspect/2` or `&Apex.Format.format/2`.
 
 
-      - ***env***: defaults to `:nil`.
+  ## Examples:
 
-      Can be passed if details of the caller are desired in the output.
-      Note: defaulting to `__CALLER__` special form
-      is not desired since that would require converting this function to a
-      macro reducing utility as a debugging tool.
+      Og.log(%{test: "test"})
 
-          - Examples:
+      Og.log(%{test: "test"}, level: :info)
 
-              Og.log(%{test: "test"}, [])
+      Og.log(%{test: "test"}, env: __ENV__)
 
-              Og.log(%{test: "test"}, [env: __ENV__])
-
-
-      - ***inspector***: defaults to `:default_inspector` in the application config.exs and if
-       not set, otherwise, defaults to `&Kernel.inspect/2`.
-
-       The inspector function determines how the data will be transformed. Currently
-       the options are `&Kernel.inspect/2` or `&Apex.Format.format/2`.
-
-          - Examples:
-
-              Og.log(%{test: "test"}, [])
-
-              Og.log(%{test: "test"}, [inspector: Apex.Format.format/2])
+      Og.log(%{test: "test"}, inspector: :apex)
   """
   @spec log_r(any, Keyword.t) :: any
   def log_r(data, opts \\ []) do
