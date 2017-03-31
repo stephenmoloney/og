@@ -12,31 +12,17 @@ defmodule Og do
 
 
   - Inspection of the data before logging it can be helpful in a debugging context for
-      1. Avoiding the `Protocol.UndefinedError` when logging tuples for example.
-      2. Not needing to require Logger
+      - Avoiding the `Protocol.UndefinedError` when logging tuples for example.
+      - Not needing to require Logger
 
 
-  - However, the functions `Og.log` and `Og.log_r` should be reserved for
+  - However, the functions `Og.log/2` and `Og.log_r/2` should be reserved for
   debugging code only in `:dev` environments and should not
    be used in production because:
       - Formatting the data carries an overhead.
 
 
-  There are two choices of inspector functions for formatting the data:
-      1. [inspector: :kernel] - `&Kernel.inspect/2` (from erlang core and the default)
-      2. [inspector: :apex] - `&Apex.Format.format/2` from [Apex](https://hex.pm/packages/apex) library for pretty printing
-
-
-  - Optionally, configure the inspection formatter options
-   in the `config.exs` file by passing:
-
-      config :logger, :og,
-        kernel_opts: [width: 70],
-        apex_opts: [numbers: :false, color: :false]
-
   ## Example configuration of the `Logger`
-
-  - Short example:
 
       use Mix.Config
 
@@ -80,11 +66,13 @@ defmodule Og do
   ## opts
 
   ***level***: defaults to `:debug`.
+
   ***env***: defaults to `:nil`.
+
   ***inspector***: defaults to `:default_inspector` in the application config.exs and if
-  not set, otherwise, defaults to `&Kernel.inspect/2`.
-  The inspector function determines how the data will be transformed. Currently
-  the options are `&Kernel.inspect/2` or `&Apex.Format.format/2`.
+  not set, otherwise, defaults to `:kernel`. The inspector function determines how the
+  data will be transformed. Currently the options are `:kernel` or `:apex` which use
+  the functions `&Kernel.inspect/2` and `&Apex.Format.format/2` respectively.
 
 
   ## Examples:
@@ -134,11 +122,13 @@ defmodule Og do
   ## opts
 
   ***level***: defaults to `:debug`.
+
   ***env***: defaults to `:nil`.
+
   ***inspector***: defaults to `:default_inspector` in the application config.exs and if
-  not set, otherwise, defaults to `&Kernel.inspect/2`.
-  The inspector function determines how the data will be transformed. Currently
-  the options are `&Kernel.inspect/2` or `&Apex.Format.format/2`.
+  not set, otherwise, defaults to `:kernel`. The inspector function determines how the
+  data will be transformed. Currently the options are `:kernel` or `:apex` which use
+  the functions `&Kernel.inspect/2` and `&Apex.Format.format/2` respectively.
 
 
   ## Examples:

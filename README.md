@@ -24,7 +24,7 @@ Ensure that `:logger` is started in the applications:
 def application do [applications: [:logger]] end
 ```
 
-### Summary
+## Summary
 
 - `log/2` - logs the data transformed by the inspector function
 and returns `:ok`
@@ -33,28 +33,40 @@ and returns the original data.
 
 
 - Inspection of the data before logging it can be helpful in a debugging context for
-    1. Avoiding the `Protocol.UndefinedError` when logging tuples for example.
-    2. Not needing to require Logger
+    - Avoiding the `Protocol.UndefinedError` when logging tuples for example.
+    - Not needing to require Logger
 
 
 - However, the functions `Og.log/2` and `Og.log_r/2` should be reserved for
 debugging code only in `:dev` environments and should not
-be used in production because:
+ be used in production because:
     - Formatting the data carries an overhead.
 
-- There are two choices of inspector functions for formatting the data:
-    - [inspector: :kernel] - `&Kernel.inspect/2` (from erlang core and the default)
-    - [inspector: :apex] - `&Apex.Format.format/2` from [Apex](https://hex.pm/packages/apex) library for pretty printing
+
+- Example configuration of the `Logger`
 
 
-### Example usage
-
-  - optional configuration in `config.exs`
 ```elixir
+use Mix.Config
+
+config :logger,
+  backends: [:console],
+  level: :debug,
+  compile_time_purge_level: :debug,
+  compile_time_application: :my_app,
+  truncate: (4096 * 8),
+  utc_log: :false
+
+config :logger, :console,
+  level: :debug,
+  format: "$time $metadata [$level] $message\n",
+  metadata: []
+
 config :logger, :og,
   kernel_opts: [width: 70],
   apex_opts: [numbers: :false, color: :false]
 ```
+
 
 ### some examples
 
