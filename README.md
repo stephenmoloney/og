@@ -57,31 +57,32 @@ config :logger, :og,
 ### some examples
 
 
-  - Basic logging
+- Basic logging
+
 ```elixir
 Og.log(:test)
 ```
 
-
 - Logging at the `:warn` level
+
 ```elixir
 Og.log(:test, level: :warn)
 ```
 
-
 - Logging at the `:warn` level and with __ENV__ specified to get richer information
+
 ```elixir
 Og.log(:test, level: :warn, env: __ENV__)
 ````
 
-
 - Logging with the Apex inspector
+
 ```elixir
 Og.log(:test, inspector: :apex)
 ```
 
-
 - Logging inside a chain of piped functions
+
 ```elixir
 defmodule OgTest do
   def log() do
