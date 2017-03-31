@@ -1,7 +1,30 @@
 # Changelog
 
+## v1.0.0
+
+[security fix]
+  - Remove dependency on `Code.eval_string/3`. A potential security issue exists with the use of
+[Code.eval_string/3](https://github.com/elixir-lang/elixir/commit/f1daca5be78e6a466745ba2cdc66d9787c3cf47f#diff-da151e1c1d9b535259a2385407272c9eR107).
+Hence only versions of `Og` >= 1.0.0 should be used.
+
+[Breaking changes]
+  - Due to removal of `Code.eval_string/3`, the library relies
+  on simple runtime function to log the data. Therefore, `:compile_time_purge_level`
+  will no longer be respected.
+  - Major change to the api. As the number of arguments grew, the api became complex.
+  The api is changing in favour of `log(data, opts)` or `log_r(data, opts)` to simplify the api.
+
+
 
 ## v0.2.4
+
+***Security Warning: Versions of `Og` less than 1.0.0 are deprecated and should not be used***
+
+- A potential security issue exists with the use of
+[Code.eval_string/3](https://github.com/elixir-lang/elixir/commit/f1daca5be78e6a466745ba2cdc66d9787c3cf47f#diff-da151e1c1d9b535259a2385407272c9eR107)
+This was noticed upon reading a relatively new warning in the
+[docs]((https://github.com/elixir-lang/elixir/commit/f1daca5be78e6a466745ba2cdc66d9787c3cf47f#diff-da151e1c1d9b535259a2385407272c9eR107)).
+- `Og` versions lower than `v1.0.0` are now deprecated and retired in favour of versions >= `1.0`.
 
 [bug fix]
 
@@ -12,12 +35,28 @@
 
 ## v0.2.3
 
+***Security Warning: Versions of `Og` less than 1.0.0 are deprecated and should not be used***
+
+- A potential security issue exists with the use of
+[Code.eval_string/3](https://github.com/elixir-lang/elixir/commit/f1daca5be78e6a466745ba2cdc66d9787c3cf47f#diff-da151e1c1d9b535259a2385407272c9eR107)
+This was noticed upon reading a relatively new warning in the
+[docs]((https://github.com/elixir-lang/elixir/commit/f1daca5be78e6a466745ba2cdc66d9787c3cf47f#diff-da151e1c1d9b535259a2385407272c9eR107)).
+- `Og` versions lower than `v1.0.0` are now deprecated and retired in favour of versions >= `1.0`.
+
 [bug fix]
 
 - Misnamed function during refactoring, `logr` -> `log_r`
 
 
 ## v0.2.2
+
+***Security Warning: Versions of `Og` less than 1.0.0 are deprecated and should not be used***
+
+- A potential security issue exists with the use of
+[Code.eval_string/3](https://github.com/elixir-lang/elixir/commit/f1daca5be78e6a466745ba2cdc66d9787c3cf47f#diff-da151e1c1d9b535259a2385407272c9eR107)
+This was noticed upon reading a relatively new warning in the
+[docs]((https://github.com/elixir-lang/elixir/commit/f1daca5be78e6a466745ba2cdc66d9787c3cf47f#diff-da151e1c1d9b535259a2385407272c9eR107)).
+- `Og` versions lower than `v1.0.0` are now deprecated and retired in favour of versions >= `1.0`.
 
 [bug fix]
 
@@ -26,11 +65,27 @@
 
 ## v0.2.1
 
+***Security Warning: Versions of `Og` less than 1.0.0 are deprecated and should not be used***
+
+- A potential security issue exists with the use of
+[Code.eval_string/3](https://github.com/elixir-lang/elixir/commit/f1daca5be78e6a466745ba2cdc66d9787c3cf47f#diff-da151e1c1d9b535259a2385407272c9eR107)
+This was noticed upon reading a relatively new warning in the
+[docs]((https://github.com/elixir-lang/elixir/commit/f1daca5be78e6a466745ba2cdc66d9787c3cf47f#diff-da151e1c1d9b535259a2385407272c9eR107)).
+- `Og` versions lower than `v1.0.0` are now deprecated and retired in favour of versions >= `1.0`.
+
 [changes]
 
 - Add some docs
 
 ## v0.2.0
+
+***Security Warning: Versions of `Og` less than 1.0.0 are deprecated and should not be used***
+
+- A potential security issue exists with the use of
+[Code.eval_string/3](https://github.com/elixir-lang/elixir/commit/f1daca5be78e6a466745ba2cdc66d9787c3cf47f#diff-da151e1c1d9b535259a2385407272c9eR107)
+This was noticed upon reading a relatively new warning in the
+[docs]((https://github.com/elixir-lang/elixir/commit/f1daca5be78e6a466745ba2cdc66d9787c3cf47f#diff-da151e1c1d9b535259a2385407272c9eR107)).
+- `Og` versions lower than `v1.0.0` are now deprecated and retired in favour of versions >= `1.0`.
 
 [changes]
 - fix compiler warnings on newer elixir verson.
@@ -55,6 +110,14 @@ all logs. Example `config :og, inspect_opts: [syntax_colors: [atom: :blue]]`
 
 ## v0.1.0
 
+***Security Warning: Versions of `Og` less than 1.0.0 are deprecated and should not be used***
+
+- A potential security issue exists with the use of
+[Code.eval_string/3](https://github.com/elixir-lang/elixir/commit/f1daca5be78e6a466745ba2cdc66d9787c3cf47f#diff-da151e1c1d9b535259a2385407272c9eR107)
+This was noticed upon reading a relatively new warning in the
+[docs]((https://github.com/elixir-lang/elixir/commit/f1daca5be78e6a466745ba2cdc66d9787c3cf47f#diff-da151e1c1d9b535259a2385407272c9eR107)).
+- `Og` versions lower than `v1.0.0` are now deprecated and retired in favour of versions >= `1.0`.
+
 - [Bug] `inspect_opts` was previously unused, rectify by passing into `Kernel.inspect/2`
 - [Tests] - added tests which capture logs and ensure output as expected.
 - [Docs] - add more complete documentation and specs.
@@ -62,12 +125,28 @@ all logs. Example `config :og, inspect_opts: [syntax_colors: [atom: :blue]]`
 
 ## v0.0.6
 
+***Security Warning: Versions of `Og` less than 1.0.0 are deprecated and should not be used***
+
+- A potential security issue exists with the use of
+[Code.eval_string/3](https://github.com/elixir-lang/elixir/commit/f1daca5be78e6a466745ba2cdc66d9787c3cf47f#diff-da151e1c1d9b535259a2385407272c9eR107)
+This was noticed upon reading a relatively new warning in the
+[docs]((https://github.com/elixir-lang/elixir/commit/f1daca5be78e6a466745ba2cdc66d9787c3cf47f#diff-da151e1c1d9b535259a2385407272c9eR107)).
+- `Og` versions lower than `v1.0.0` are now deprecated and retired in favour of versions >= `1.0`.
+
 - Add an option `__ENV__` argument to the `log` and `log_return` function so that
   the context (line, function, module) can optionally be logged when the function is called.
 - Rewrite functions`log/1`, `log/2`, `log/3`, `log_return/1`, `log_return/2` and `log_return/3`
 
 
 ## v0.0.5
+
+***Security Warning: Versions of `Og` less than 1.0.0 are deprecated and should not be used***
+
+- A potential security issue exists with the use of
+[Code.eval_string/3](https://github.com/elixir-lang/elixir/commit/f1daca5be78e6a466745ba2cdc66d9787c3cf47f#diff-da151e1c1d9b535259a2385407272c9eR107)
+This was noticed upon reading a relatively new warning in the
+[docs]((https://github.com/elixir-lang/elixir/commit/f1daca5be78e6a466745ba2cdc66d9787c3cf47f#diff-da151e1c1d9b535259a2385407272c9eR107)).
+- `Og` versions lower than `v1.0.0` are now deprecated and retired in favour of versions >= `1.0`.
 
 - Docs: Add examples to readme.md file
 - Docs: Add links to functions in hex docs.

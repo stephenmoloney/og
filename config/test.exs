@@ -2,7 +2,8 @@ use Mix.Config
 
 config :logger,
   backends: [:console],
-  compile_time_purge_level: :debug
+  compile_time_purge_level: :info
 
 config :logger, :og,
-  default_inspector: &Kernel.inspect/2
+  kernel_opts: [width: 70],
+  apex_opts: [numbers: :false, color: :false]

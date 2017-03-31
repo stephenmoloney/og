@@ -1,271 +1,203 @@
 defmodule Og do
   @moduledoc ~S"""
-  Some convenience utility functions on top of the elixir `Logger` module. Mostly useful for debugging purposes.
+  Óg is a small collection of debugging helper functions. Og is a debugging tool for development,
+  the use of ordinary `Logger` is preferred for production.
 
   ## Summary
 
-
-  - `log/1`, `log/2`, `alog/1`, `alog/2`, `klog/1`, `klog/2`
-
-  - Inspects the data before logging it. For example, this can be helpful for avoiding the `Protocol.UndefinedError`
-  when logging tuples for example. There are two choices for formatting the data:
-
-      1. `Kernel.inspect/2` (from erlang core)
-      2. `Apex.Format.format/2` from [Apex](https://hex.pm/packages/apex) library for pretty printing
-
-  - Configure the inspection function in the `config.exs` file by passing:
-
-      config :logger, :og, default_inspector: Kernel.inspect/2
-
-      or
-
-      config :logger, :og, default_inspector: Apex.Format.format/2
-
-  - *Optionally* pass the log_level `:debug`, `:info`, `:warn` or `:error` which will respect the
-  logger `:compile_time_purge_level` configuration setting. Defaults to `:debug`.
+  - `log/2` - logs the data transformed by the inspector function
+  and returns `:ok`
+  - `log_r/2` - logs the data transformed by the inspector function
+  and returns the original data.
 
 
-  - `log_r/1`, `log_r/2`, `alog_r/1`, `alog_r/2`, `klog_r/1`, `klog_r/2`
-
-  - Performs operations identical to `Og.log/4` but returns the data in it's original form.
-
-  - Can be useful when one wants to log some intermediate data in the middle of a series of
-  data transformations using the `|>` operator. see the example in `log_return/4`.
+  - Inspection of the data before logging it can be helpful in a debugging context for
+      1. Avoiding the `Protocol.UndefinedError` when logging tuples for example.
+      2. Not needing to require Logger
 
 
-  ## Example configuration
+  - However, the functions `Og.log` and `Og.log_r` should be reserved for
+  debugging code only in `:dev` environments and should not
+   be used in production because:
+      - Formatting the data carries an overhead.
+
+
+  There are two choices of inspector functions for formatting the data:
+      1. [inspector: :kernel] - `&Kernel.inspect/2` (from erlang core and the default)
+      2. [inspector: :apex] - `&Apex.Format.format/2` from [Apex](https://hex.pm/packages/apex) library for pretty printing
+
+
+  - Optionally, configure the inspection formatter options
+   in the `config.exs` file by passing:
+
+      config :logger, :og,
+        kernel_opts: [width: 70],
+        apex_opts: [numbers: :false, color: :false]
+
+  ## Example configuration of the `Logger`
 
   - Short example:
 
-  ```
-  use Mix.Config
+      use Mix.Config
 
-  config :logger,
-    backends: [:console],
-    level: :debug,
-    compile_time_purge_level: :debug,
-    compile_time_application: :my_app,
-    truncate: (4096 * 8),
-    utc_log: :false
+      config :logger,
+        backends: [:console],
+        level: :debug,
+        compile_time_purge_level: :debug,
+        compile_time_application: :my_app,
+        truncate: (4096 * 8),
+        utc_log: :false
 
-  config :logger, :console,
-    level: :debug,
-    format: "$time $metadata [$level] $message\n",
-    metadata: []
+      config :logger, :console,
+        level: :debug,
+        format: "$time $metadata [$level] $message\n",
+        metadata: []
 
-  config :logger, :og,
-    default_inspector: &Kernel.inspect/2
-  ```
-
-  - Long example:
-
-  ```
-  use Mix.Config
-  limiter1 = "===================    [$level]    ========================"
-  datetime = "|---$date $time"
-  metadata = "|---$metadata"
-  node = "|---$node"
-  msg = "|---message:"
-  limiter2 = "==================   [end $level]    ======================="
-
-  config :logger,
-    backends: [:console],
-    level: :debug,
-    compile_time_purge_level: :debug,
-    compile_time_application: :my_app,
-    truncate: (4096 * 8),
-    utc_log: :false
-
-  config :logger, :console,
-    level: :debug,
-    format: "#{limiter1}\n#{datetime}\n#{metadata}\n#{node}\n#{msg}\n\n$message\n\n#{limiter2}\n",
-    metadata: [:module, :function, :line]
-
-  config :logger, :og,
-    default_inspector: &Kernel.inspect/2,
-    kernel: [
-      inspect_opts: [width: 70]
-    ],
-    apex: [
-      format_opts: [numbers: :false, color: :false]
-    ]
-  ```
-
+      config :logger, :og,
+        kernel_opts: [width: 70],
+        apex_opts: [numbers: :false, color: :false]
   """
  require Logger
- @default_inspector (Application.get_env(:logger, :og) || []) |> Keyword.get(:default_inspector, &Kernel.inspect/2)
- @kernel_opts (Application.get_env(:logger, :og) || []) |> Keyword.get(:kernel, [])
- @kernel_inspect_opts Keyword.get(@kernel_opts, :inspect_opts, [])
- @apex_opts (Application.get_env(:logger, :og) || []) |> Keyword.get(:apex, [])
- @apex_format_opts Keyword.get(@apex_opts, :format_opts, [color: :false, numbers: :false])
- @default_opts if @default_inspector == &Kernel.inspect/2, do: @kernel_inspect_opts, else: @apex_format_opts
+ @kernel_opts Application.get_env(:logger, :og, [])
+              |> Keyword.get(:kernel_opts, [])
+ @apex_opts Application.get_env(:logger, :og, [])
+            |> Keyword.get(:apex_opts, [color: :false, numbers: :false])
 
 
   # Public
 
-  @doc "Logs the data formatted with the `default_inspector` function and log_level `:debug`"
-  @spec log(any) :: :ok
-  def log(data), do: log(data, :debug)
+  @doc """
+  Formats the data using an inspector function, logs it and returns the
+  atom `:ok`.
 
-  @doc "Logs the data formatted with the `default_inspector` function and log_level passed as the second argument"
-  @spec log(any, atom) :: :ok
-  def log(data, log_level) when is_atom(log_level) do
-    data = @default_inspector.(data, @default_opts)
-    Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: data], requires: [Logger])
+  ## Notes:
+
+    - There is an overhead in converting the data to
+      other formats such as a binary representation. Hence,
+      `Og.log/2` and `Og.log_r/2` are preferred for
+      development debugging purposes only.
+
+  ## opts
+
+
+      - ***level***: defaults to `:debug`.
+
+          - Examples:
+
+              Og.log(%{test: "test"}, [])
+
+              Og.log(%{test: "test"}, [level: :info])
+
+
+      - ***env***: defaults to `:nil`.
+
+      Can be passed if details of the caller are desired in the output.
+      Note: defaulting to `__CALLER__` special form
+      is not desired since that would require converting this function to a
+      macro reducing utility as a debugging tool.
+
+          - Examples:
+
+              Og.log(%{test: "test"}, [])
+
+              Og.log(%{test: "test"}, [env: __ENV__])
+
+
+      - ***inspector***: defaults to `:default_inspector` in the application config.exs and if
+       not set, otherwise, defaults to `&Kernel.inspect/2`.
+
+       The inspector function determines how the data will be transformed. Currently
+       the options are `&Kernel.inspect/2` or `&Apex.Format.format/2`.
+
+          - Examples:
+
+              Og.log(%{test: "test"}, [])
+
+              Og.log(%{test: "test"}, [inspector: Apex.Format.format/2])
+  """
+  @spec log(any, Keyword.t | Macro.Env.t) :: :ok
+  def log(data, opts \\ []) do
+    inspector = Keyword.get(opts, :inspector, :kernel)
+    inspector_opts =
+    case inspector do
+      :kernel -> @kernel_opts
+      :apex -> @apex_opts
+      _ -> @kernel_opts
+    end
+    inspector =
+    case inspector do
+      :kernel -> &Kernel.inspect/2
+      :apex -> &Apex.Format.format/2
+      _ -> &Kernel.inspect/2
+    end
+    env = Keyword.get(opts, :env, :nil)
+    level = Keyword.get(opts, :level, :debug)
+    (base_details(env) <> inspector.(data, inspector_opts))
+    |> log_data(level)
     :ok
   end
-  def log(data, %Macro.Env{} = env) do
-    log(data, env, :debug)
-  end
-
-  @doc :false
-  def log(data, %Macro.Env{} = env, log_level) do
-    data = base_details(env) <> @default_inspector.(data, @default_opts)
-    Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: data], requires: [Logger])
-    :ok
-  end
-
-  @doc "Logs the data formatted with the `Kernel.inspect/2` function and log_level `:debug`"
-  @spec klog(any) :: :ok
-  def klog(data), do: klog(data, :debug)
-
-  @doc "Logs the data formatted with the `Kernel.inspect/2` function and log_level passed as the second argument"
-  @spec klog(any, atom) :: any
-  def klog(data, log_level) when is_atom(log_level) do
-    data = Kernel.inspect(data, @kernel_inspect_opts)
-    Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: data], requires: [Logger])
-    :ok
-  end
-  def klog(data, %Macro.Env{} = env) do
-    klog(data, env, :debug)
-  end
-
-  @doc :false
-  def klog(data, %Macro.Env{} = env, log_level) do
-    data = base_details(env) <> Kernel.inspect(data, @kernel_inspect_opts)
-    Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: data], requires: [Logger])
-    :ok
-  end
-
-  @doc "Logs the data formatted with the `Apex.Format.format/2` function and log_level `:debug`"
-  @spec alog(any) :: :ok
-  def alog(data), do: alog(data, :debug)
-
-  @doc "Logs the data formatted with the `Apex.Format.format/2` function and log_level passed as the second argument"
-  @spec alog(any, atom) :: any
-  def alog(data, log_level) when is_atom(log_level) do
-    data = Apex.Format.format(data, @apex_format_opts)
-    Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: data], requires: [Logger])
-    :ok
-  end
-  def alog(data, %Macro.Env{} = env) do
-    alog(data, env, :debug)
-  end
-
-  @doc :false
-  def alog(data, %Macro.Env{} = env, log_level) do
-    data = base_details(env) <> Apex.Format.format(data, @apex_format_opts)
-    Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: data], requires: [Logger])
-    :ok
-  end
 
 
-  @doc "Logs the data formatted with the `default_inspector` function and log_level `:debug`.
-  Returns the original data"
-  @spec log_r(any) :: any
-  def log_r(data), do: log_r(data, :debug)
+  @doc """
+  Formats the data using an inspector function, logs it and returns the
+  original data.
 
-  @doc "Logs the data formatted with the `default_inspector` function and log_level passed as the second argument.
-  Returns the original data"
-  @spec log_r(any, atom) :: any
-  def log_r(data, log_level) when is_atom(log_level) do
-    log_data = @default_inspector.(data, @default_opts)
-    Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: log_data], requires: [Logger])
+  ## Notes:
+
+    - There is an overhead in converting the data to
+      other formats such as a binary representation. Hence,
+      `Og.log/2` and `Og.log_r/2` are preferred for
+      development debugging purposes only.
+
+  ## opts
+
+
+      - ***level***: defaults to `:debug`.
+
+          - Examples:
+
+              Og.log(%{test: "test"}, [])
+
+              Og.log(%{test: "test"}, [level: :info])
+
+
+      - ***env***: defaults to `:nil`.
+
+      Can be passed if details of the caller are desired in the output.
+      Note: defaulting to `__CALLER__` special form
+      is not desired since that would require converting this function to a
+      macro reducing utility as a debugging tool.
+
+          - Examples:
+
+              Og.log(%{test: "test"}, [])
+
+              Og.log(%{test: "test"}, [env: __ENV__])
+
+
+      - ***inspector***: defaults to `:default_inspector` in the application config.exs and if
+       not set, otherwise, defaults to `&Kernel.inspect/2`.
+
+       The inspector function determines how the data will be transformed. Currently
+       the options are `&Kernel.inspect/2` or `&Apex.Format.format/2`.
+
+          - Examples:
+
+              Og.log(%{test: "test"}, [])
+
+              Og.log(%{test: "test"}, [inspector: Apex.Format.format/2])
+  """
+  @spec log_r(any, Keyword.t) :: any
+  def log_r(data, opts \\ []) do
+    log(data, opts)
     data
-  end
-  def log_r(data, %Macro.Env{} = env) do
-    log_r(data, env, :debug)
-  end
-
-  @doc :false
-  def log_r(data, %Macro.Env{} = env, log_level) do
-    log_data = base_details(env) <> @default_inspector.(data, @default_opts)
-    Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: log_data], requires: [Logger])
-    data
-  end
-
-  @doc "Logs the data formatted with the `Kernel.inspect/2` function and log_level `:debug`"
-  @spec klog_r(any) :: any
-  def klog_r(data), do: klog_r(data, :debug)
-
-  @doc "Logs the data formatted with the `Kernel.inspect/2` function and log_level passed as the second argument"
-  @spec klog_r(any, atom) :: any
-  def klog_r(data, log_level) when is_atom(log_level) do
-    log_data = Kernel.inspect(data, @kernel_inspect_opts)
-    Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: log_data], requires: [Logger])
-    data
-  end
-  def klog_r(data, %Macro.Env{} = env) do
-    klog_r(data, env, :debug)
-  end
-
-  @doc :false
-  def klog_r(data, %Macro.Env{} = env, log_level) do
-    log_data = base_details(env) <> Kernel.inspect(data, @kernel_inspect_opts)
-    Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: log_data], requires: [Logger])
-    data
-  end
-
-  @doc "Logs the data formatted with the `Apex.Format.format/2` function and log_level `:debug`"
-  @spec alog_r(any) :: any
-  def alog_r(data), do: alog_r(data, :debug)
-
-  @doc "Logs the data formatted with the `Apex.Format.format/2` function and log_level passed as the second argument"
-  @spec alog_r(any, atom) :: any
-  def alog_r(data, log_level) when is_atom(log_level) do
-    log_data = Apex.Format.format(data, @apex_format_opts)
-    Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: log_data], requires: [Logger])
-    data
-  end
-  def alog_r(data, %Macro.Env{} = env) do
-    alog_r(data, env, :debug)
-  end
-
-  @doc :false
-  def alog_r(data, %Macro.Env{} = env, log_level) do
-    log_data = base_details(env) <> Apex.Format.format(data, @apex_format_opts)
-    Code.eval_string("Logger.#{Atom.to_string(log_level)}(args)", [args: log_data], requires: [Logger])
-    data
-  end
-
-  ## To be deprecated
-  @doc :false
-  def log_return(data), do: log_r(data, :debug)
-
-  ## To be deprecated
-  @doc :false
-  def log_return(data, log_level) when is_atom(log_level), do: log_r(data, log_level)
-  def log_return(data, env), do: log_r(data, env, :debug)
-
-  ## To be deprecated
-  @doc :false
-  def log_return(data, env, log_level) when is_map(env), do: log_r(data, env, log_level)
-  def log_return(data, log_level, _inspect_opts) do
-    IO.puts("Please note that passing the inspect_opts to log_return has now been deprecated, use another function")
-    log_r(data, log_level)
-  end
-
-  ## To be deprecated
-  @doc :false
-  def log_return(data, env, log_level, _inspect_opts) do
-    IO.puts("Please note that passing the inspect_opts to log_return has now been deprecated, use another function")
-    log_r(data, env, log_level)
   end
 
 
   # Private
 
 
+  defp base_details(:nil), do: ""
   defp base_details(env) do
     put_into_string = fn(elem, name) ->
       case elem do
@@ -283,6 +215,17 @@ defmodule Og do
     function = put_into_string.(function, "function")
     line = put_into_string.(env.line, "line") |> String.trim_trailing(" ") |> String.trim_trailing(",")
     "#{application}#{module}#{function}#{line}:\n"
+  end
+
+
+  defp log_data(formatted_data, level) do
+    cond do
+      level == :error -> Logger.error(formatted_data)
+      level == :warn -> Logger.warn(formatted_data)
+      level == :info -> Logger.info(formatted_data)
+      level == :debug -> Logger.debug(formatted_data)
+      :true -> raise("unexpected log level")
+    end
   end
 
 end
