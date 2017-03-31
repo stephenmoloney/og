@@ -34,15 +34,14 @@ and returns the original data.
     2. Not needing to require Logger
 
 
-- However, the functions `Og.log` and `Og.log_r` should be reserved for
+- However, the functions `Og.log/2` and `Og.log_r/2` should be reserved for
 debugging code only in `:dev` environments and should not
- be used in production because:
+be used in production because:
     - Formatting the data carries an overhead.
 
-
-There are two choices of inspector functions for formatting the data:
-    1. [inspector: :kernel] - `&Kernel.inspect/2` (from erlang core and the default)
-    2. [inspector: :apex] - `&Apex.Format.format/2` from [Apex](https://hex.pm/packages/apex) library for pretty printing
+- There are two choices of inspector functions for formatting the data:
+    - [inspector: :kernel] - `&Kernel.inspect/2` (from erlang core and the default)
+    - [inspector: :apex] - `&Apex.Format.format/2` from [Apex](https://hex.pm/packages/apex) library for pretty printing
 
 
 ### Example usage
