@@ -1,10 +1,9 @@
 # Óg [![Build Status](https://travis-ci.org/stephenmoloney/og.svg)](https://travis-ci.org/stephenmoloney/og) [![Hex Version](http://img.shields.io/hexpm/v/og.svg?style=flat)](https://hex.pm/packages/og) [![Hex docs](http://img.shields.io/badge/hex.pm-docs-green.svg?style=flat)](https://hexdocs.pm/og)
 
-[Óg](http://hexdocs.pm/og/Og.html) is a small collection of debugging helper functions.
-Og is a debugging tool for development environments.
+[Óg](http://hexdocs.pm/og/Og.html) is a small collection of debugging functions for use during development.
 
 
-### Note:
+### Warning:
 
 - Do not use release versions of `Og` less than 1.0 due to a security issue with
 the use of `Code.eval_string/3`. Read [more in the changelog](https://github.com/stephenmoloney/og/blob/master/CHANGELOG.md#v024).
@@ -15,11 +14,15 @@ the use of `Code.eval_string/3`. Read [more in the changelog](https://github.com
 
 Add óg to your list of dependencies in `mix.exs`:
 
-    def deps, do: [{:og, "~> 1.0"}]
+```elixir
+def deps, do: [{:og, "~> 1.0"}]
+```
 
 Ensure that `:logger` is started in the applications:
 
-    `def application do [applications: [:logger]] end`
+```elixir
+def application do [applications: [:logger]] end
+```
 
 ### Summary
 
