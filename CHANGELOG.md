@@ -8,9 +8,6 @@
 Hence only versions of `Og` >= 1.0.0 should be used.
 
 [Breaking changes]
-  - Due to removal of `Code.eval_string/3`, the library relies
-  on simple runtime function to log the data. Therefore, `:compile_time_purge_level`
-  will no longer be respected.
   - Major change to the api. As the number of arguments grew, the api became complex.
   The api is changing in favour of `log(data, opts)` or `log_r(data, opts)` to simplify the api.
 
