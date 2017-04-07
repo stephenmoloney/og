@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.0.1
+
+[changes]
+- Add support for the old form of writing the log functions. Eg `Og.log_r(%{"test" => "test"}, __ENV__, :error)`
+as it was faster and quite convenient. These functions will be docless... to avoid cluttering the docs.
+
+
 ## v1.0.0
 
 [security fix]

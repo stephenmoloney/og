@@ -43,11 +43,11 @@ defmodule Og do
         kernel_opts: [width: 70],
         apex_opts: [numbers: :false, color: :false]
   """
- require Logger
- @kernel_opts Application.get_env(:logger, :og, [])
-              |> Keyword.get(:kernel_opts, [])
- @apex_opts Application.get_env(:logger, :og, [])
-            |> Keyword.get(:apex_opts, [color: :false, numbers: :false])
+  require Logger
+  defp kernel_opts(), do: Application.get_env(:logger, :og, [])
+                          |> Keyword.get(:kernel_opts, [])
+  defp apex_opts(), do: Application.get_env(:logger, :og, [])
+                        |> Keyword.get(:apex_opts, [color: :false, numbers: :false])
 
 
   # Public
@@ -90,9 +90,9 @@ defmodule Og do
     inspector = Keyword.get(opts, :inspector, :kernel)
     inspector_opts =
     case inspector do
-      :kernel -> @kernel_opts
-      :apex -> @apex_opts
-      _ -> @kernel_opts
+      :kernel -> kernel_opts()
+      :apex -> apex_opts()
+      _ -> kernel_opts()
     end
     inspector =
     case inspector do
@@ -106,6 +106,31 @@ defmodule Og do
     |> log_data(level)
     :ok
   end
+
+  @doc :false
+  @spec log(data :: any, env :: Macro.Env.t) :: :ok
+  def log(data, %Macro.Env{} = env), do: Og.log(data, env: env)
+
+  @doc :false
+  @spec log(data :: any, level :: atom) :: :ok
+  def log(data, :error), do: Og.log(data, level: :error)
+  def log(data, :warn), do: Og.log(data, level: :error)
+  def log(data, :infor), do: Og.log(data, level: :info)
+  def log(data, :debug), do: Og.log(data, level: :debug)
+
+  @doc :false
+  @spec log(data :: any, env :: Macro.Env.t, level :: atom) :: :ok
+  def log(data, %Macro.Env{} = env, :error), do: Og.log(data, env: env, level: :error)
+  def log(data, %Macro.Env{} = env, :warn), do: Og.log(data, env: env, level: :warn)
+  def log(data, %Macro.Env{} = env, :info), do: Og.log(data, env: env, level: :info)
+  def log(data, %Macro.Env{} = env, :debug), do: Og.log(data, env: env, level: :debug)
+
+  @doc :false
+  @spec log(data :: any, level :: atom, env :: Macro.Env.t) :: :ok
+  def log(data, :error, %Macro.Env{} = env), do: Og.log(data, env: env, level: :error)
+  def log(data, :warn, %Macro.Env{} = env), do: Og.log(data, env: env, level: :warn)
+  def log(data, :info, %Macro.Env{} = env), do: Og.log(data, env: env, level: :info)
+  def log(data, :debug, %Macro.Env{} = env), do: Og.log(data, env: env, level: :debug)
 
 
   @doc """
@@ -146,6 +171,31 @@ defmodule Og do
     log(data, opts)
     data
   end
+
+  @doc :false
+  @spec log_r(data :: any, env :: Macro.Env.t) :: any
+  def log_r(data, %Macro.Env{} = env), do: Og.log_r(data, env: env)
+
+  @doc :false
+  @spec log_r(data :: any, level :: atom) :: any
+  def log_r(data, :error), do: Og.log_r(data, level: :error)
+  def log_r(data, :warn), do: Og.log_r(data, level: :error)
+  def log_r(data, :infor), do: Og.log_r(data, level: :info)
+  def log_r(data, :debug), do: Og.log_r(data, level: :debug)
+
+  @doc :false
+  @spec log_r(data :: any, env :: Macro.Env.t, level :: atom) :: any
+  def log_r(data, %Macro.Env{} = env, :error), do: Og.log_r(data, env: env, level: :error)
+  def log_r(data, %Macro.Env{} = env, :warn), do: Og.log_r(data, env: env, level: :warn)
+  def log_r(data, %Macro.Env{} = env, :info), do: Og.log_r(data, env: env, level: :info)
+  def log_r(data, %Macro.Env{} = env, :debug), do: Og.log_r(data, env: env, level: :debug)
+
+  @doc :false
+  @spec log_r(data :: any, level :: atom, env :: Macro.Env.t) :: any
+  def log_r(data, :error, %Macro.Env{} = env), do: Og.log_r(data, env: env, level: :error)
+  def log_r(data, :warn, %Macro.Env{} = env), do: Og.log_r(data, env: env, level: :warn)
+  def log_r(data, :info, %Macro.Env{} = env), do: Og.log_r(data, env: env, level: :info)
+  def log(data, :debug, %Macro.Env{} = env), do: Og.log_r(data, env: env, level: :debug)
 
 
   # Private
