@@ -1,6 +1,6 @@
 defmodule Og.Mixfile do
   use Mix.Project
-  @version "1.0.1"
+  @version "1.0.2"
 
   def project do
     [
@@ -23,7 +23,7 @@ defmodule Og.Mixfile do
   end
 
   def application do
-    [applications: [:logger]]
+    [applications: [:logger, :apex]]
   end
 
   def deps() do

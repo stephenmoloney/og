@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.0.2
+
+[changes]
+- Add `:apex` to applications. Giving warnings as unstarted application otherwise.
+
 ## v1.0.1
 
 [changes]
