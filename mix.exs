@@ -1,6 +1,6 @@
 defmodule Og.Mixfile do
   use Mix.Project
-  @version "1.1"
+  @version "1.1.0"
 
   def project do
     [
@@ -29,7 +29,7 @@ defmodule Og.Mixfile do
   def deps() do
     [
       {:apex,  "~> 1.0"},
-      {:secure_log_formatter, "~> 1.0"},
+      {:secure_log_formatter, "~> 1.1"},
       {:earmark, "~> 1.0", only: :dev},
       {:ex_doc,  "~> 0.14", only: :dev}
     ]

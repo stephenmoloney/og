@@ -48,7 +48,7 @@ environments.
     config :logger, :og,
       kernel_opts: [width: 70],
       apex_opts: [numbers: :false, color: :false],
-      sanitize: :false,
+      sanitize_by_default: :false,
       default_inspector: :kernel
 
 
@@ -62,7 +62,7 @@ and `Kernel.inspect/2`, refer to `https://hexdocs.pm/elixir/Inspect.Opts.html`
 refer to `https://github.com/BjRo/apex/blob/master/lib/apex/format.ex`
 
 
-- `sanitize` - defaults to `:false`, when set to `:true`, an attempt will
+- `sanitize_by_default` - defaults to `:false`, when set to `:true`, an attempt will
 be made to apply the `SecureLogFormatter.sanitize/1` function on the data
 before applying the inspection function. For this function to take any
 effect, the settings for `SecureLogFormatter` must also be placed in
@@ -144,13 +144,13 @@ OgTest.log()
 ### Acknowledgements
 
 - [Apex library](https://hex.pm/packages/apex), [Björn Rochel](https://hex.pm/users/bjro)
-    - Setting the `config.exs` opts or the log function opts to `inspector: :apex` will use the `Apex.Format.format/2`
-    function from the apex library.
+    - Setting the `config.exs` opts or the log function opts to `inspector: :apex`
+    will use the `Apex.Format.format/2` function from the apex library.
 
 
 - [SecureLogFormatter library](https://hex.pm/packages/secure_log_formatter), [Sean Callan](https://hex.pm/users/doomspork)
-    - Setting `config.exs` opts to `sanitize: :true` will use the `SecureLogFormatter.sanitize/1`
-    function from the SecureLogFormatter library.
+    - Setting `config.exs` opts or the log function opts to `sanitize: :true`
+    will use the `SecureLogFormatter.sanitize/1` function from the SecureLogFormatter library.
 
 
 ### Todo

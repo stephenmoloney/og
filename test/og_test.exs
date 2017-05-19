@@ -3,7 +3,7 @@ defmodule OgTest do
   alias ExUnit.CaptureLog
   alias Og.TestSupport
 
-  test "log/1 when capture level = :debug" do
+  test "log/2 when capture level = :debug" do
     actual = CaptureLog.capture_log(
       [level: :debug],
       fn() -> Og.log("test", level: :info) end
@@ -127,6 +127,24 @@ defmodule OgTest do
     assert(actual ==expected)
   end
 
+  test "log sanitizes input as expected (1)" do
+    actual = CaptureLog.capture_log(
+      [level: :debug],
+      fn() -> Og.log(%{credit_card: "4111111111111111"}, sanitize: :true, level: :info) end
+    )
+    as_expected? = Regex.match?(~r/HIDDEN/, actual)
+    assert(as_expected? == :true)
+  end
+
+  test "log sanitizes input as expected (2)" do
+    actual = CaptureLog.capture_log(
+      [level: :debug],
+      fn() -> Og.log("Credit_card number: 4111111111111111", sanitize: :true, level: :error) end
+    )
+    as_expected? = Regex.match?(~r/HIDDEN/, actual)
+    assert(as_expected? == :true)
+  end
+
   # The expected output should not be printed since the `:compile_time_purge_level` is set to `:info`
   test "compile_time_purge_level works as expected - :debug" do
     actual = TestSupport.compile_purge_test(:debug)
@@ -140,7 +158,5 @@ defmodule OgTest do
     as_expected? = Regex.match?(~r/test/, actual)
     assert(as_expected? == :true)
   end
-
-
 
 end

@@ -29,7 +29,7 @@ defmodule Og do
       config :logger, :og,
         kernel_opts: [width: 70],
         apex_opts: [numbers: :false, color: :false],
-        sanitize: :false,
+        sanitize_by_default: :false,
         default_inspector: :kernel
 
 
@@ -43,12 +43,12 @@ defmodule Og do
   refer to `https://github.com/BjRo/apex/blob/master/lib/apex/format.ex`
 
 
-  - `sanitize` - defaults to `:false`, when set to `:true`, an attempt will
+  - `sanitize_by_default` - defaults to `:false`, when set to `:true`, an attempt will
   be made to apply the `SecureLogFormatter.sanitize/1` function on the data
   before applying the inspection function. For this function to take any
   effect, the settings for `SecureLogFormatter` must also be placed in
-  `config.exs`. See the following
-  [secure_log_formatter url](https://github.com/localvore-today/secure_log_formatter/blob/master/lib/secure_log_formatter.ex)
+  `config.exs`. See
+  [secure_log_formatter](https://github.com/localvore-today/secure_log_formatter/blob/master/lib/secure_log_formatter.ex)
   for more details.
 
 
@@ -81,8 +81,8 @@ defmodule Og do
                         |> Keyword.get(:apex_opts, [color: :false, numbers: :false])
   defp default_inspector(), do: Application.get_env(:logger, :og, [])
                         |> Keyword.get(:default_inspector, :kernel)
-  defp sanitize?(), do: Application.get_env(:logger, :og, [])
-                        |> Keyword.get(:sanitize, :false)
+  defp sanitize_by_default?(), do: Application.get_env(:logger, :og, [])
+                        |> Keyword.get(:sanitize_by_default, :false)
 
 
   # Public
@@ -100,14 +100,22 @@ defmodule Og do
 
   ## opts
 
-  ***level***: defaults to `:debug`.
+  - ***level***: defaults to `:debug`.
 
-  ***env***: defaults to `:nil`.
+  - ***env***: defaults to `:nil`.
 
-  ***inspector***: defaults to `:default_inspector` in the application config.exs.
+  - ***inspector***: defaults to `:default_inspector` in the application config.exs and if not
+  set falls back to `Kernel.inspect/2`.
   The inspector function determines what function transforms the data prior to logging.
   Currently the options are `:kernel` or `:apex` which use
   the functions `&Kernel.inspect/2` and `&Apex.Format.format/2` respectively.
+
+  - ***sanitize***: defaults to `:sanitize_by_default` in the application config.exs and if not
+  set falls back to `:false`.
+  When set to `:true` the function `SecureLogFormatter.sanitize/1` will be applied to
+  the data prior to logging the data. See
+  [secure_log_formatter](https://github.com/localvore-today/secure_log_formatter/blob/master/lib/secure_log_formatter.ex)
+  for more details.
 
   ## Examples:
 
@@ -123,6 +131,7 @@ defmodule Og do
   def log(data, opts \\ [])
   def log(data, opts) when is_list(opts) do
     inspector = Keyword.get(opts, :inspector, default_inspector())
+    sanitize? = Keyword.get(opts, :sanitize, sanitize_by_default?())
     inspector_opts =
     case inspector do
       :kernel -> kernel_opts()
@@ -136,9 +145,9 @@ defmodule Og do
       _ -> &Kernel.inspect/2
     end
     data =
-    case sanitize?() do
-      :true -> data
-      :false -> SecureLogFormatter.sanitize(data)
+    case sanitize? do
+      :true -> SecureLogFormatter.sanitize(data)
+      :false -> data
     end
     env = Keyword.get(opts, :env, :nil)
     level = Keyword.get(opts, :level, :debug)
@@ -180,14 +189,20 @@ defmodule Og do
 
   ## opts
 
-  ***level***: defaults to `:debug`.
+  - ***level***: defaults to `:debug`.
 
-  ***env***: defaults to `:nil`.
+  - ***env***: defaults to `:nil`.
 
-  ***inspector***: defaults to `:default_inspector` in the application config.exs.
+  - ***inspector***: defaults to `:default_inspector` in the application config.exs.
   The inspector function determines what function transforms the data prior to logging.
   Currently the options are `:kernel` or `:apex` which use
   the functions `&Kernel.inspect/2` and `&Apex.Format.format/2` respectively.
+
+  - ***sanitize***: defaults to `:sanitize_by_default` in the application config.exs.
+  When set to `:true` the function `SecureLogFormatter.sanitize/1` will be applied to
+  the data prior to logging the data. See
+  [secure_log_formatter](https://github.com/localvore-today/secure_log_formatter/blob/master/lib/secure_log_formatter.ex)
+  for more details.
 
 
   ## Examples:
