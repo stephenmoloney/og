@@ -126,6 +126,8 @@ defmodule Og do
       Og.log(%{test: "test"}, env: __ENV__)
 
       Og.log(%{test: "test"}, inspector: :apex)
+
+      Og.log(%{credit_card: "4111111111111111"}, sanitize: :true)
   """
   @spec log(any, Keyword.t) :: :ok
   def log(data, opts \\ [])
@@ -214,6 +216,8 @@ defmodule Og do
       Og.log(%{test: "test"}, env: __ENV__)
 
       Og.log(%{test: "test"}, inspector: :apex)
+
+      Og.log(%{credit_card: "4111111111111111"}, sanitize: :true)
   """
   @spec log_r(any, Keyword.t) :: any
   def log_r(data, opts \\ [])
