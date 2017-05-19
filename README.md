@@ -121,6 +121,13 @@ Og.log(:this_is_a_test, level: :warn, env: __ENV__)
 Og.log(:this_is_a_test, inspector: :apex)
 ```
 
+- Logging and applying sanitization with the features of
+[secure_log_formatter](https://github.com/localvore-today/secure_log_formatter)
+
+```elixir
+Og.log(%{credit_card: 4111111111111}, sanitize: :true)
+```
+
 - Logging inside a chain of piped functions
 
 ```elixir
@@ -141,14 +148,14 @@ OgTest.log()
 ```
 
 
-### Acknowledgements
+### Dependencies
 
-- [Apex library](https://hex.pm/packages/apex), [Björn Rochel](https://hex.pm/users/bjro)
+- [Apex library](https://hex.pm/packages/apex) --- [Björn Rochel](https://hex.pm/users/bjro)
     - Setting the `config.exs` opts or the log function opts to `inspector: :apex`
     will use the `Apex.Format.format/2` function from the apex library.
 
 
-- [SecureLogFormatter library](https://hex.pm/packages/secure_log_formatter), [Sean Callan](https://hex.pm/users/doomspork)
+- [SecureLogFormatter library](https://hex.pm/packages/secure_log_formatter)  ---  [Sean Callan](https://hex.pm/users/doomspork)
     - Setting `config.exs` opts or the log function opts to `sanitize: :true`
     will use the `SecureLogFormatter.sanitize/1` function from the SecureLogFormatter library.
 
