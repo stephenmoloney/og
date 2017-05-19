@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.1
+
+[bug fix]
+- logger was logging `:warn` as `:error` for some calls.
+- `:default_inspector` was absent from configuration - added back in.
+
+[enhancements]
+- introduce `:secure_log_formatter` so that sensitive parameters can be
+redacted out of the log files. Added `SecureLogFormatter.sanitize(data)`
+so that an attempt can optionally be made to sanitize data prior to logging it.
+
+[changes]
+
+
 ## v1.0.2
 
 [changes]
