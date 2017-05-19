@@ -1,11 +1,11 @@
 # Óg [![Build Status](https://travis-ci.org/stephenmoloney/og.svg)](https://travis-ci.org/stephenmoloney/og) [![Hex Version](http://img.shields.io/hexpm/v/og.svg?style=flat)](https://hex.pm/packages/og) [![Hex docs](http://img.shields.io/badge/hex.pm-docs-green.svg?style=flat)](https://hexdocs.pm/og)
 
-[Óg](http://hexdocs.pm/og/Og.html) is a small collection of debugging functions for use during development.
+[Óg](http://hexdocs.pm/og/Og.html) is a small collection of debugging functions for logging data.
 
 
 ### Note
 
-- Functions `Og.log/2` and `Og.log_r/2` are debugging tools for use during development only.
+- Functions `Og.log/2` and `Og.log_r/2` are primarily intended as debugging tools.
 
 
 ### Installation
@@ -19,51 +19,79 @@ def deps, do: [{:og, "~> 1.0"}]
 Ensure that `:logger` is started in the applications:
 
 ```elixir
-def application do [applications: [:logger]] end
+def application do [applications: [:logger, :og]] end
 ```
 
 ## Summary
 
 - `log/2` - logs the data transformed by the inspector function
 and returns `:ok`
+
+
 - `log_r/2` - logs the data transformed by the inspector function
 and returns the original data.
 
 
 - Inspection of the data before logging it can be helpful in a debugging context for
-    - Avoiding the `Protocol.UndefinedError` when logging tuples for example.
+example for
+    - Avoiding the `Protocol.UndefinedError` when logging tuples.
     - Not needing to require Logger
 
 
-- However, the functions `Og.log/2` and `Og.log_r/2` should be reserved for
-debugging code only in `:dev` environments and should not
- be used in production because:
-    - Formatting the data carries an overhead.
+- Formatting with `Kernel.inspect` on the data carries an overhead so
+`Og.log/2` and `Og.log_r/2` should be probably be reserved for debugging code in `:dev`
+environments.
 
 
-- Example configuration of the `Logger`
+## Configuration
+
+    config :logger, :og,
+      kernel_opts: [width: 70],
+      apex_opts: [numbers: :false, color: :false],
+      sanitize: :false,
+      default_inspector: :kernel
 
 
-```elixir
-use Mix.Config
+## Configuration options
 
-config :logger,
-  backends: [:console],
-  level: :debug,
-  compile_time_purge_level: :debug,
-  compile_time_application: :my_app,
-  truncate: (4096 * 8),
-  utc_log: :false
+- `kernel_opts` - corresponds to elixir inspect opts for `IO.inspect/2`
+and `Kernel.inspect/2`, refer to `https://hexdocs.pm/elixir/Inspect.Opts.html`
 
-config :logger, :console,
-  level: :debug,
-  format: "$time $metadata [$level] $message\n",
-  metadata: []
 
-config :logger, :og,
-  kernel_opts: [width: 70],
-  apex_opts: [numbers: :false, color: :false]
-```
+- `apex_opts` - corresponds to options for the `Apex.Format.format/2` function,
+refer to `https://github.com/BjRo/apex/blob/master/lib/apex/format.ex`
+
+
+- `sanitize` - defaults to `:false`, when set to `:true`, an attempt will
+be made to apply the `SecureLogFormatter.sanitize/1` function on the data
+before applying the inspection function. For this function to take any
+effect, the settings for `SecureLogFormatter` must also be placed in
+`config.exs`. See the following
+[secure_log_formatter url](https://github.com/localvore-today/secure_log_formatter/blob/master/lib/secure_log_formatter.ex)
+for more details.
+
+
+- `default_inspector` - corresponds to the default inspector which will apply
+to the data passed to the log function. This can be overriden in the options
+of the log function. The options are `:kernel` or `:apex`, the default is `:kernel`.
+
+
+Example configuration for secure_log_formatter, as referenced at
+the following [secure_log_formatter url](https://github.com/localvore-today/secure_log_formatter/blob/master/lib/secure_log_formatter.ex).
+
+
+    config :logger,
+      secure_log_formatter:
+        [
+          # Map and Keyword List keys who's value should be hidden
+          fields: ["password", "credit_card", ~r/.*_token/],
+
+          # Patterns which if found, should be hidden
+          patterns: [~r/4[0-9]{15}/] # Simple credit card example
+
+          # defaults to "[REDACTED]"
+          replacement: "[PRIVATE]"
+        ]
 
 
 ### some examples
@@ -72,25 +100,25 @@ config :logger, :og,
 - Basic logging
 
 ```elixir
-Og.log(:test)
+Og.log(:this_is_a_test)
 ```
 
 - Logging at the `:warn` level
 
 ```elixir
-Og.log(:test, level: :warn)
+Og.log(:this_is_a_test, level: :warn)
 ```
 
 - Logging at the `:warn` level and with __ENV__ specified to get richer information
 
 ```elixir
-Og.log(:test, level: :warn, env: __ENV__)
+Og.log(:this_is_a_test, level: :warn, env: __ENV__)
 ````
 
 - Logging with the Apex inspector
 
 ```elixir
-Og.log(:test, inspector: :apex)
+Og.log(:this_is_a_test, inspector: :apex)
 ```
 
 - Logging inside a chain of piped functions
@@ -113,15 +141,22 @@ OgTest.log()
 ```
 
 
-
 ### Acknowledgements
 
-- Credit to [Björn Rochel](https://github.com/BjRo) for the [Apex library](https://github.com/BjRo/apex).
-Setting opts to `[inspector: :apex]` will use the `Apex.Format.format/2` function from the apex library.
+- [Apex library](https://hex.pm/packages/apex), [Björn Rochel](https://hex.pm/users/bjro)
+    - Setting the `config.exs` opts or the log function opts to `inspector: :apex` will use the `Apex.Format.format/2`
+    function from the apex library.
+
+
+- [SecureLogFormatter library](https://hex.pm/packages/secure_log_formatter), [Sean Callan](https://hex.pm/users/doomspork)
+    - Setting `config.exs` opts to `sanitize: :true` will use the `SecureLogFormatter.sanitize/1`
+    function from the SecureLogFormatter library.
+
 
 ### Todo
 
 - [ ] Investigate adding a custom formatting module as an optional additional means of logging.
+
 
 ### Licence
 
