@@ -2,6 +2,12 @@
 
 ## v1.1
 
+[changes]
+-add `:secure_log_formatter` to applications
+
+
+## v1.1
+
 [bug fix]
 - logger was logging `:warn` as `:error` for some calls.
 - `:default_inspector` was absent from configuration - added back in.
