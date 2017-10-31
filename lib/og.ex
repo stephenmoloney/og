@@ -230,7 +230,7 @@ defmodule Og do
   def log_r(data, %Macro.Env{} = env), do: Og.log_r(data, env: env)
   @spec log_r(data :: any, level :: atom) :: any
   def log_r(data, :error), do: Og.log_r(data, level: :error)
-  def log_r(data, :warn), do: Og.log_r(data, level: :error)
+  def log_r(data, :warn), do: Og.log_r(data, level: :warn)
   def log_r(data, :info), do: Og.log_r(data, level: :info)
   def log_r(data, :debug), do: Og.log_r(data, level: :debug)
 
