@@ -61,8 +61,7 @@ defmodule Og do
   the following [secure_log_formatter url](https://github.com/localvore-today/secure_log_formatter/blob/master/lib/secure_log_formatter.ex).
 
 
-      config :logger,
-      secure_log_formatter:
+      config :logger, secure_log_formatter:
         [
           # Map and Keyword List keys who's value should be hidden
           fields: ["password", "credit_card", ~r/.*_token/],
@@ -75,15 +74,6 @@ defmodule Og do
         ]
   """
   require Logger
-  defp kernel_opts(), do: Application.get_env(:logger, :og, [])
-                          |> Keyword.get(:kernel_opts, [])
-  defp apex_opts(), do: Application.get_env(:logger, :og, [])
-                        |> Keyword.get(:apex_opts, [color: :false, numbers: :false])
-  defp default_inspector(), do: Application.get_env(:logger, :og, [])
-                        |> Keyword.get(:default_inspector, :kernel)
-  defp sanitize_by_default?(), do: Application.get_env(:logger, :og, [])
-                        |> Keyword.get(:sanitize_by_default, :false)
-
 
   # Public
 
@@ -100,9 +90,13 @@ defmodule Og do
 
   ## opts
 
-  - ***level***: defaults to `:debug`.
+  - ***level***: This is te log_level. Defaults to `:debug`.
 
-  - ***env***: defaults to `:nil`.
+  - ***env***: This is the `__ENV__` macro. defaults to `:nil`.
+
+  - ***func***: A transformation function which can be optionally applied on the data
+  before then logging the transformed data. The function should take one argument.
+  defaults to `:false`.
 
   - ***inspector***: defaults to `:default_inspector` in the application config.exs and if not
   set falls back to `Kernel.inspect/2`.
@@ -151,6 +145,12 @@ defmodule Og do
       :true -> SecureLogFormatter.sanitize(data)
       :false -> data
     end
+    func = Keyword.get(opts, :func, :false)
+    data =
+    case func && is_function(func) do
+      :false -> data
+      _ -> func.(data)
+    end
     env = Keyword.get(opts, :env, :nil)
     level = Keyword.get(opts, :level, :debug)
     (base_details(env) <> inspector.(data, inspector_opts))
@@ -158,25 +158,43 @@ defmodule Og do
     :ok
   end
 
-  @spec log(data :: any, env :: Macro.Env.t) :: :ok
-  def log(data, env_or_level)
+  @spec log(data :: any, env_or_level_or_func :: Macro.Env.t | fun() | atom()) :: :ok
+  def log(data, env_or_level_or_func)
+
   @spec log(data :: any, level :: atom) :: :ok
   def log(data, :error), do: Og.log(data, level: :error)
   def log(data, :warn), do: Og.log(data, level: :warn)
   def log(data, :info), do: Og.log(data, level: :info)
   def log(data, :debug), do: Og.log(data, level: :debug)
 
+  @spec log(data :: any, func :: fun()) :: :ok
+  def log(data, func) when is_function(func), do: Og.log(data, func: func)
+
   @spec log(data :: any, env :: Macro.Env.t, level :: atom) :: :ok
   def log(data, %Macro.Env{} = arg, :error), do: Og.log(data, env: arg, level: :error)
   def log(data, %Macro.Env{} = arg, :warn), do: Og.log(data, env: arg, level: :warn)
   def log(data, %Macro.Env{} = arg, :info), do: Og.log(data, env: arg, level: :info)
   def log(data, %Macro.Env{} = arg, :debug), do: Og.log(data, env: arg, level: :debug)
+  
   @spec log(data :: any, level :: atom, env :: Macro.Env.t) :: :ok
   def log(data, :error, %Macro.Env{} = arg), do: Og.log(data, env: arg, level: :error)
   def log(data, :warn, %Macro.Env{} = arg), do: Og.log(data, env: arg, level: :warn)
   def log(data, :info, %Macro.Env{} = arg), do: Og.log(data, env: arg, level: :info)
   def log(data, :debug, %Macro.Env{} = arg), do: Og.log(data, env: arg, level: :debug)
 
+  @spec log(data :: any, func :: fun, env :: Macro.Env.t, level :: atom) :: :ok
+  def log(data, func, %Macro.Env{} = arg, :error) when is_function(func) do
+    Og.log(data, env: arg, level: :error, func: func)
+  end
+  def log(data, func, %Macro.Env{} = arg, :warn) when is_function(func) do
+    Og.log(data, env: arg, level: :warn, func: func)
+  end
+  def log(data, func, %Macro.Env{} = arg, :info) when is_function(func) do
+    Og.log(data, env: arg, level: :info, func: func)
+  end
+  def log(data, func, %Macro.Env{} = arg, :debug) when is_function(func) do
+    Og.log(data, env: arg, level: :debug, func: func)
+  end
 
   @doc """
   Formats the data using an inspector function, logs it and returns the
@@ -234,17 +252,34 @@ defmodule Og do
   def log_r(data, :info), do: Og.log_r(data, level: :info)
   def log_r(data, :debug), do: Og.log_r(data, level: :debug)
 
+  @spec log_r(data :: any, func :: fun()) :: any
+  def log_r(data, func) when is_function(func), do: Og.log_r(data, func: func)
+
   @spec log_r(data :: any, env :: Macro.Env.t, level :: atom) :: any
   def log_r(data, %Macro.Env{} = arg, :error), do: Og.log_r(data, env: arg, level: :error)
   def log_r(data, %Macro.Env{} = arg, :warn), do: Og.log_r(data, env: arg, level: :warn)
   def log_r(data, %Macro.Env{} = arg, :info), do: Og.log_r(data, env: arg, level: :info)
   def log_r(data, %Macro.Env{} = arg, :debug), do: Og.log_r(data, env: arg, level: :debug)
+
   @spec log_r(data :: any, level :: atom, env :: Macro.Env.t) :: any
   def log_r(data, :error, %Macro.Env{} = arg), do: Og.log_r(data, env: arg, level: :error)
   def log_r(data, :warn, %Macro.Env{} = arg), do: Og.log_r(data, env: arg, level: :warn)
   def log_r(data, :info, %Macro.Env{} = arg), do: Og.log_r(data, env: arg, level: :info)
   def log_r(data, :debug, %Macro.Env{} = arg), do: Og.log_r(data, env: arg, level: :debug)
 
+  @spec log_r(data :: any, func :: fun, env :: Macro.Env.t, level :: atom) :: :ok
+  def log_r(data, func, %Macro.Env{} = arg, :error) when is_function(func) do
+    Og.log_r(data, env: arg, level: :error, func: func)
+  end
+  def log_r(data, func, %Macro.Env{} = arg, :warn) when is_function(func) do
+    Og.log_r(data, env: arg, level: :warn, func: func)
+  end
+  def log_r(data, func, %Macro.Env{} = arg, :info) when is_function(func) do
+    Og.log_r(data, env: arg, level: :info, func: func)
+  end
+  def log_r(data, func, %Macro.Env{} = arg, :debug) when is_function(func) do
+    Og.log_r(data, env: arg, level: :debug, func: func)
+  end
 
   # Private
 
@@ -280,4 +315,23 @@ defmodule Og do
     end
   end
 
+  defp kernel_opts() do
+    Application.get_env(:logger, :og, [])
+    |> Keyword.get(:kernel_opts, [])
+  end
+
+  defp apex_opts() do
+    Application.get_env(:logger, :og, [])
+    |> Keyword.get(:apex_opts, [color: :false, numbers: :false])
+  end
+
+  defp default_inspector() do
+    Application.get_env(:logger, :og, [])
+    |> Keyword.get(:default_inspector, :kernel)
+  end
+
+  defp sanitize_by_default?() do
+    Application.get_env(:logger, :og, [])
+    |> Keyword.get(:sanitize_by_default, :false)
+  end
 end
